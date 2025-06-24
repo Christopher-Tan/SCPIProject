@@ -1,4 +1,6 @@
 import socket
+from CouplingMeasurement import Measurements
+from SCPIParser import SCPIParser
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind(("0.0.0.0", 50024))
@@ -7,11 +9,32 @@ s.listen(1)
 while True:
     conn, _ = s.accept()
     with conn:
+        measurements = Measurements()
+        parser = SCPIParser({
+            ":MEASure:COUPling:K?": lambda: measurements.k,
+            ":MEASure:COUPling:K1?": lambda: measurements.k1,
+            ":MEASure:COUPling:K2?": lambda: measurements.k2,
+            ":MEASure:COUPling:LS1Prim?": lambda: measurements.Ls1_prim,
+            ":MEASure:COUPling:LM?": lambda: measurements.Lm,
+            ":MEASure:COUPling:LS2Prim?": lambda: measurements.Ls2_prim,
+            ":MEASure:COUPling:LS?": lambda: measurements.Ls,
+            ":MEASure:COUPling:LP?": lambda: measurements.Lp,
+            ":MEASure:COUPling:N?": lambda: measurements.N,
+            ":MEASure[:COUPling]": measurements.measure,
+            ":MEASure:COUPling:FREQuency?": lambda: measurements.freq,
+            ":MEASure:COUPling:FREQuency": lambda freq: setattr(measurements, 'freq', float(freq)),
+            ":MEASure:COUPling:VOLTage?": lambda: measurements.voltLvl,
+            ":MEASure:COUPling:VOLTage": lambda volt: setattr(measurements, 'voltLvl', float(volt)),
+            ":MEASure:COUPling?": measurements,
+            "*IDN?": lambda: "Raspberry Pi",
+            "*RST": lambda: measurements.__init__()
+        })
         while True:
             data = conn.recv(1024)
             if not data:
                 break
             cmd = data.decode().strip()
             print(cmd)
-            if cmd == "*IDN?":
-                conn.sendall("Raspberry Pi\n".encode())
+            response = parser.parse(cmd)
+            if cmd.endswith('?'):
+                conn.sendall(str(response).encode() + b'\n')

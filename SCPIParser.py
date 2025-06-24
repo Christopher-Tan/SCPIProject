@@ -41,7 +41,7 @@ def name_parser(name):
     return names
 
 def match(query, key):
-    return query.upper() == key.upper() or query.upper() == ''.join([i for i in key if i.isupper()])
+    return query.upper() == key.upper() or query.upper() == ''.join([i for i in key if i.isupper() or i == '?'])
 
 class Tree:
     def __init__(self, name, value=None):

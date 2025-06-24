@@ -3,12 +3,36 @@ from pymeasure.instruments.agilent import Agilent34465A
 #from pymeasure.instruments.rohdeschwarz import HMP4030
 from pymeasure.instruments.rohdeschwarz import Hmc804X
 from pymeasure.instruments.keysight import KeysightE4980AL
-from pymeasureauxiliary.dynplot import Dynplt
+#from pymeasureauxiliary.dynplot import Dynplt
 import matplotlib.pyplot as plt
 import time
 import numpy as np
 
 import lgpio
+
+class Measurements:
+    def __init__(self):
+        self.freq = 20e3
+        self.voltLvl = 3
+        self.k = ''
+        self.k1 = ''
+        self.k2 = ''
+        self.Ls1_prim = ''
+        self.Lm = ''
+        self.Ls2_prim = ''
+        self.Ls = ''
+        self.Lp = ''
+        self.N = ''
+        
+    def __str__(self):
+        return ' '.join([str(self.freq), str(self.voltLvl), str(self.k), str(self.k1), str(self.k2), str(self.Ls1_prim), str(self.Lm), str(self.Ls2_prim), str(self.Ls), str(self.Lp), str(self.N)])
+        
+    def set(self, string):
+        self.freq, self.voltLvl, self.k, self.k1, self.k2, self.Ls1_prim, self.Lm, self.Ls2_prim, self.Ls, self.Lp, self.N = [float(i) for i in string.split(' ')]
+    
+    def measure(self):
+        self.k, self.k1, self.k2, self.Ls1_prim, self.Lm, self.Ls2_prim, self.Ls, self.Lp, self.N = measure(self.freq, self.voltLvl)
+
 
 # set parameter
 nPrim = 30
@@ -167,10 +191,12 @@ def startMeasurement():
     N = nSec/nPrim*(1+Ls2_prim/Lm)
     print("N = %f" %(N))
     print("1/N = %f" %(1/N))
+    
+    return k, k1, k2, Ls1_prim, Lm, Ls2_prim, Ls, Lp, N
 
-def measure():
-    initCouplingMeasurement()
-    startMeasurement()
+def measure(freq=20e3, voltLvl=3):
+    initCouplingMeasurement(freq, voltLvl)
+    return startMeasurement()
 
 if __name__ == '__main__':
     measure()
