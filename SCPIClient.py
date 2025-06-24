@@ -1,6 +1,14 @@
-ip = "146.136.90.15"
-port = 50024
+import subprocess
+import threading
+import time
+import webview
 
-from OST import CouplingMeasurer
+def start_streamlit():
+    subprocess.Popen(["streamlit", "run", "GUI.py", "--server.headless=true"])
 
-instrument = CouplingMeasurer(f"TCPIP::{ip}::{port}::SOCKET", read_termination="\n", write_termination="\n")
+threading.Thread(target=start_streamlit, daemon=True).start()
+
+time.sleep(2)
+
+webview.create_window("Coupling measurements", "http://localhost:8501", width=800, height=600)
+webview.start()
