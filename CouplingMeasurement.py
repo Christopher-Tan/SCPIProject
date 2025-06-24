@@ -27,15 +27,17 @@ class Measurements:
         self.nSec = 2
         self.v1 = ''
         self.v2 = ''
+        self.L1 = ''
+        self.L2 = ''
         
     def __str__(self):
-        return ' '.join([str(self.freq), str(self.voltLvl), str(self.k), str(self.k1), str(self.k2), str(self.Ls1_prim), str(self.Lm), str(self.Ls2_prim), str(self.Ls), str(self.Lp), str(self.N)])
+        return ' '.join([str(self.freq), str(self.voltLvl), str(self.k), str(self.k1), str(self.k2), str(self.Ls1_prim), str(self.Lm), str(self.Ls2_prim), str(self.Ls), str(self.Lp), str(self.N), str(self.nPrim), str(self.nSec), str(self.v1), str(self.v2), str(self.L1), str(self.L2)])
         
     def set(self, string):
-        self.freq, self.voltLvl, self.k, self.k1, self.k2, self.Ls1_prim, self.Lm, self.Ls2_prim, self.Ls, self.Lp, self.N = [float(i) for i in string.split(' ')]
+        self.freq, self.voltLvl, self.k, self.k1, self.k2, self.Ls1_prim, self.Lm, self.Ls2_prim, self.Ls, self.Lp, self.N, self.nPrim, self.nSec, self.v1, self.v2, self.L1, self.L2 = [float(i) for i in string.split(' ')]
     
     def measure(self):
-        self.k, self.k1, self.k2, self.Ls1_prim, self.Lm, self.Ls2_prim, self.Ls, self.Lp, self.N = measure(self.freq, self.voltLvl)
+        self.L1, self.L2, self.v1, self.v2, self.k, self.k1, self.k2, self.Ls1_prim, self.Lm, self.Ls2_prim, self.Ls, self.Lp, self.N = measure(self.freq, self.voltLvl)
 
 
 # set parameter

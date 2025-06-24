@@ -32,6 +32,8 @@ while True:
                 ":MEASure:COUPling:NSECondary": lambda nSec: setattr(measurements, 'nSec', int(nSec)),
                 ":MEASure:COUPling:V1?": lambda: measurements.v1,
                 ":MEASure:COUPling:V2?": lambda: measurements.v2,
+                ":MEASure:COUPling:L1?": lambda: measurements.L1,
+                ":MEASure:COUPling:L2?": lambda: measurements.L2,
                 ":MEASure:COUPling?": lambda: measurements,
                 "*IDN?": lambda: "Raspberry Pi",
                 "*RST": measurements.__init__,

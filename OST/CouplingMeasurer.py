@@ -89,3 +89,13 @@ class CouplingMeasurer(Instrument):
         "MEASure:COUPling:NSECondary %g",
         """An integer property that controls the number of secondary turns.""",
     )
+    
+    L1 = Instrument.measurement(
+        "MEASure:COUPling:L1?",
+        """A property that returns the inductance of the primary winding L1."""
+    )
+    
+    L2 = Instrument.measurement(
+        "MEASure:COUPling:L2?",
+        """A property that returns the inductance of the secondary winding L2."""
+    )
