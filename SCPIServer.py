@@ -25,9 +25,9 @@ while True:
             ":MEASure:COUPling:FREQuency": lambda freq: setattr(measurements, 'freq', float(freq)),
             ":MEASure:COUPling:VOLTage?": lambda: measurements.voltLvl,
             ":MEASure:COUPling:VOLTage": lambda volt: setattr(measurements, 'voltLvl', float(volt)),
-            ":MEASure:COUPling?": measurements,
+            ":MEASure:COUPling?": lambda: measurements,
             "*IDN?": lambda: "Raspberry Pi",
-            "*RST": lambda: measurements.__init__()
+            "*RST": measurements.__init__,
         })
         while True:
             data = conn.recv(1024)
