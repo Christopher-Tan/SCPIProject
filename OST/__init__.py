@@ -1,1 +1,1 @@
-from CouplingMeasurer import CouplingMeasurer
+from .CouplingMeasurer import CouplingMeasurer

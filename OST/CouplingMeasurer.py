@@ -9,14 +9,14 @@ class CouplingMeasurer(Instrument):
         )
         
     frequency = Instrument.control(
-        "FREQ?",
-        "FREQ %g",
+        "MEASure:COUPling:FREQ?",
+        "MEASure:COUPling:FREQ %g",
         """A floating point property that controls the frequency of the measurement.""",
     )
     
     voltage = Instrument.control(
-        "VOLT?",
-        "VOLT %g",
+        "MEASure:COUPling:VOLT?",
+        "MEASure:COUPling:VOLT %g",
         """A floating point property that controls the voltage level of the measurement.""",
     )
     
@@ -24,46 +24,46 @@ class CouplingMeasurer(Instrument):
         self.write("MEAS")
     
     k = Instrument.measurement(
-        "K?",
+        "MEASure:COUPling:K?",
         """A property that returns the coupling coefficient K."""
     )
     
     k1 = Instrument.measurement(
-        "K1?",
+        "MEASure:COUPling:K1?",
         """A property that returns the primary coupling coefficient K1."""
     )
     
     k2 = Instrument.measurement(
-        "K2?",
+        "MEASure:COUPling:K2?",
         """A property that returns the secondary coupling coefficient K2."""
     )
     
     Ls1_prim = Instrument.measurement(
-        "LS1Prim?",
+        "MEASure:COUPling:LS1Prim?",
         """A property that returns the primary inductance of the first winding Ls1_prim."""
     )
     
     Lm = Instrument.measurement(
-        "LM?",
+        "MEASure:COUPling:LM?",
         """A property that returns the mutual inductance Lm."""
     )
     
     Ls2_prim = Instrument.measurement(
-        "LS2Prim?",
+        "MEASure:COUPling:LS2Prim?",
         """A property that returns the primary inductance of the second winding Ls2_prim."""
     )
     
     Ls = Instrument.measurement(
-        "LS?",
+        "MEASure:COUPling:LS?",
         """A property that returns the self-inductance Ls."""
     )
     
     Lp = Instrument.measurement(
-        "LP?",
+        "MEASure:COUPling:LP?",
         """A property that returns the primary inductance Lp."""
     )
     
     N = Instrument.measurement(
-        "N?",
+        "MEASure:COUPling:N?",
         """A property that returns the turns ratio N."""
     )
