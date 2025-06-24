@@ -23,6 +23,10 @@ class Measurements:
         self.Ls = ''
         self.Lp = ''
         self.N = ''
+        self.nPrim = 30
+        self.nSec = 2
+        self.v1 = ''
+        self.v2 = ''
         
     def __str__(self):
         return ' '.join([str(self.freq), str(self.voltLvl), str(self.k), str(self.k1), str(self.k2), str(self.Ls1_prim), str(self.Lm), str(self.Ls2_prim), str(self.Ls), str(self.Lp), str(self.N)])
@@ -192,9 +196,11 @@ def startMeasurement():
     print("N = %f" %(N))
     print("1/N = %f" %(1/N))
     
-    return k, k1, k2, Ls1_prim, Lm, Ls2_prim, Ls, Lp, N
+    return L1, L2, v1, v2, k, k1, k2, Ls1_prim, Lm, Ls2_prim, Ls, Lp, N
 
-def measure(freq=20e3, voltLvl=3):
+def measure(freq=20e3, voltLvl=3, Prim=30, Sec=2):
+    global nPrim, nSec
+    nPrim, nSec = Prim, Sec
     initCouplingMeasurement(freq, voltLvl)
     return startMeasurement()
 

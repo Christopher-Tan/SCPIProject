@@ -67,3 +67,25 @@ class CouplingMeasurer(Instrument):
         "MEASure:COUPling:N?",
         """A property that returns the turns ratio N."""
     )
+    
+    v1 = Instrument.measurement(
+        "MEASure:COUPling:V1?",
+        """A property that returns the voltage V1."""
+    )
+    
+    v2 = Instrument.measurement(
+        "MEASure:COUPling:V2?",
+        """A property that returns the voltage V2."""
+    )
+    
+    nPrim = Instrument.control(
+        "MEASure:COUPling:NPRIMary?",
+        "MEASure:COUPling:NPRIMary %g",
+        """An integer property that controls the number of primary turns.""",
+    )
+    
+    nSec = Instrument.control(
+        "MEASure:COUPling:NSECondary?",
+        "MEASure:COUPling:NSECondary %g",
+        """An integer property that controls the number of secondary turns.""",
+    )
