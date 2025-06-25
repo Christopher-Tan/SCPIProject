@@ -42,10 +42,12 @@ while True:
                 data = conn.recv(1024)
                 if not data:
                     break
-                cmd = data.decode().strip()
-                print(cmd)
-                response = parser.execute(cmd)
-                if cmd.endswith('?'):
-                    conn.sendall(str(response).encode() + b'\n')
+                data = data.decode()
+                for line in data.split('\n'):
+                    cmd = line.strip()
+                    print(cmd)
+                    response = parser.execute(cmd)
+                    if cmd.endswith('?'):
+                        conn.sendall(str(response).encode() + b'\n')
     except Exception as e:
         print(f"Error: {e}")

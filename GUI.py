@@ -7,13 +7,19 @@ from streamlit_navigation_bar import st_navbar
 
 st.set_page_config(page_title="Coupling Measurements", layout="wide")
 
-
-
+def fetch():
+    if instrument:
+        st.session_state['voltage'] = instrument.voltage
+        st.session_state['frequency'] = instrument.frequency
+        st.session_state['nPrim'] = instrument.nPrim
+        st.session_state['nSec'] = instrument.nSec
+        
 from OST import CouplingMeasurer
 if 'instrument' not in st.session_state:
     try:
-        instrument = CouplingMeasurer(f"TCPIP::{ip}::{port}::SOCKET", read_termination="\n", write_termination="\n")
+        instrument = CouplingMeasurer(f"TCPIP::{ip}::{port}::SOCKET", read_termination="\n", write_termination="\n", timeout=10000)
         st.session_state['instrument'] = instrument
+        fetch()
         st.success(f"Connected to {instrument.id}.")
     except Exception as e:
         instrument = None
@@ -36,16 +42,17 @@ if g.button("Measure", args=(), key="measure_button"):
 if g.button("Reset", args=(), key="reset_button"):
     try:
         instrument.reset()
+        fetch()
     except Exception as e:
         print(e)
         st.session_state.pop('instrument', None)
         st.error(f"Failed to connect to and reset the instrument")
 
 try:
-    instrument.voltage = float(g.text_input("Voltage", value=instrument.voltage, key="voltage_input"))
-    instrument.frequency = float(g.text_input("Frequency", value=instrument.frequency, key="frequency_input"))
-    instrument.nPrim = float(g.text_input("nPrim", value=instrument.nPrim, key="nPrim_input"))
-    instrument.nSec = float(g.text_input("nSec", value=instrument.nSec, key="nSec_input"))
+    instrument.voltage = g.number_input("Voltage", key="voltage")
+    instrument.frequency = g.number_input("Frequency", key="frequency")
+    instrument.nPrim = g.number_input("nPrim", key="nPrim")
+    instrument.nSec = g.number_input("nSec", key="nSec")
 except Exception as e:
     print(e)
     st.session_state.pop('instrument', None)
