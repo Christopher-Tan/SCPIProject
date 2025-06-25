@@ -29,3 +29,31 @@ if g.button("Reset", args=(), key="reset_button"):
         print(e)
         st.error(f"Failed to connect to and reset the instrument")
 
+n = st_navbar(["Raw Data", "T-Model", "Gamma-Model"], styles={
+        'nav': {
+            'background-color': 'rgba(0, 0, 0, 0)',
+            'margin': '0px',
+            'padding': '0.5rem',
+        },
+        'div': {
+            'background-color': 'rgba(0, 0, 0, 0.1)',
+            'margin': '0px',
+            'padding': '0.5rem 1rem',
+            'border-radius': '4rem',
+            'width': '320px',
+        },
+        'span': {
+            'color': 'rgb(50, 50, 65)',
+            'margin': '0px',
+            'padding': '0px 1rem',
+            'border-radius': '4rem',
+            'width': '60px',
+        },
+        'active': {
+            'background-color': 'rgb(255, 255, 255)',
+        },
+        'hover': {
+            'background-color': 'rgb(255, 255, 255)',
+        },
+    }
+)
