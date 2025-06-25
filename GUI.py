@@ -21,7 +21,7 @@ if 'instrument' not in st.session_state:
 else:
     instrument = st.session_state['instrument']
 
-g = grid([2, 8, 3, 3], vertical_align='center')
+g = grid([2, 8, 3, 3], [1, 1, 1, 1, 4], vertical_align='center')
 
 g.empty()
 g.title("Coupling Measurements")
@@ -40,6 +40,16 @@ if g.button("Reset", args=(), key="reset_button"):
         print(e)
         st.session_state.pop('instrument', None)
         st.error(f"Failed to connect to and reset the instrument")
+
+try:
+    instrument.voltage = float(g.text_input("Voltage", value=instrument.voltage, key="voltage_input"))
+    instrument.frequency = float(g.text_input("Frequency", value=instrument.frequency, key="frequency_input"))
+    instrument.nPrim = float(g.text_input("nPrim", value=instrument.nPrim, key="nPrim_input"))
+    instrument.nSec = float(g.text_input("nSec", value=instrument.nSec, key="nSec_input"))
+except Exception as e:
+    print(e)
+    st.session_state.pop('instrument', None)
+    st.error(f"Failed to connect to and set the instrument parameters")
 
 n = st_navbar(["Raw Data", "T-Model", "Gamma-Model"], adjust=False, styles={
         'nav': {
