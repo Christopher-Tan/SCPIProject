@@ -10,7 +10,17 @@ st.set_page_config(page_title="Coupling Measurements", layout="wide")
 
 
 from OST import CouplingMeasurer
-instrument = CouplingMeasurer(f"TCPIP::{ip}::{port}::SOCKET", read_termination="\n", write_termination="\n")
+if 'instrument' not in st.session_state:
+    try:
+        instrument = CouplingMeasurer(f"TCPIP::{ip}::{port}::SOCKET", read_termination="\n", write_termination="\n")
+        st.session_state['instrument'] = instrument
+        st.success(f"Connected to {instrument.id}.")
+    except Exception as e:
+        instrument = None
+        st.error(f"Failed to connect to the instrument at {ip}:{port}. Please check the connection and try again.")
+else:
+    instrument = st.session_state['instrument']
+
 g = grid([2, 8, 3, 3], vertical_align='center')
 
 g.empty()
@@ -20,6 +30,7 @@ if g.button("Measure", args=(), key="measure_button"):
         instrument.measure()
     except Exception as e:
         print(e)
+        st.session_state.pop('instrument', None)
         st.error(f"Failed to connect to and perform a measurement on the instrument")
 
 if g.button("Reset", args=(), key="reset_button"):
@@ -27,9 +38,10 @@ if g.button("Reset", args=(), key="reset_button"):
         instrument.reset()
     except Exception as e:
         print(e)
+        st.session_state.pop('instrument', None)
         st.error(f"Failed to connect to and reset the instrument")
 
-n = st_navbar(["Raw Data", "T-Model", "Gamma-Model"], styles={
+n = st_navbar(["Raw Data", "T-Model", "Gamma-Model"], adjust=False, styles={
         'nav': {
             'background-color': 'rgba(0, 0, 0, 0)',
             'margin': '0px',
@@ -57,3 +69,33 @@ n = st_navbar(["Raw Data", "T-Model", "Gamma-Model"], styles={
         },
     }
 )
+try:
+    match n:
+        case "Raw Data":
+            data = {
+                'L1': instrument.L1,
+                'L2': instrument.L2,
+                'k1': instrument.k1,
+                'v1': instrument.v1,
+                'v2': instrument.v2,
+            }
+        case "T-Model":
+            data = {
+                'Ls1_prim': instrument.Ls1_prim,
+                'Lm': instrument.Lm,
+                'Ls2_prim': instrument.Ls2_prim,
+            }
+        case "Gamma-Model":
+            data = {
+                'Ls': instrument.Ls,
+                'Lp': instrument.Lp,
+                'k': instrument.k,
+                'k1': instrument.k1,
+                'k2': instrument.k2,
+                'N': instrument.N,
+            }
+except Exception as e:
+    print(e)
+    data = {}
+
+st.table(data)
