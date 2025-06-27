@@ -2,6 +2,13 @@ import socket
 from CouplingMeasurement import Measurements
 from SCPIParser import SCPIParser
 
+"""SCPI Server for transformer coupling measurements.
+
+Attributes:
+    measurements (Measurements): An instance of the Measurements class to hold measurement data.
+    parser (SCPIParser): An instance of the SCPIParser to handle SCPI commands
+"""
+
 if __name__ == "__main__":
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(("0.0.0.0", 50024))

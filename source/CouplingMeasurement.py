@@ -11,6 +11,7 @@ import numpy as np
 import lgpio
 
 class Measurements:
+    """Class to hold the measurements of a transformer coupling measurement."""
     def __init__(self):
         self.freq = 20e3
         self.voltLvl = 3
@@ -31,12 +32,15 @@ class Measurements:
         self.L2 = ''
         
     def __str__(self):
+        """Return a string representation of the measurements."""
         return ' '.join([str(self.freq), str(self.voltLvl), str(self.k), str(self.k1), str(self.k2), str(self.Ls1_prim), str(self.Lm), str(self.Ls2_prim), str(self.Ls), str(self.Lp), str(self.N), str(self.nPrim), str(self.nSec), str(self.v1), str(self.v2), str(self.L1), str(self.L2)])
         
     def set(self, string):
+        """Set the measurements from a string representation."""
         self.freq, self.voltLvl, self.k, self.k1, self.k2, self.Ls1_prim, self.Lm, self.Ls2_prim, self.Ls, self.Lp, self.N, self.nPrim, self.nSec, self.v1, self.v2, self.L1, self.L2 = [float(i) for i in string.split(' ')]
     
     def measure(self):
+        """Perform the measurement and update the attributes."""
         self.L1, self.L2, self.v1, self.v2, self.k, self.k1, self.k2, self.Ls1_prim, self.Lm, self.Ls2_prim, self.Ls, self.Lp, self.N = measure(self.freq, self.voltLvl)
 
 

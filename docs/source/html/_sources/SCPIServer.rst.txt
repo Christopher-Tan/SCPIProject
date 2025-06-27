@@ -1,0 +1,11 @@
+SCPIServer.py
+=============
+
+This module provides a server for SCPI (Standard Commands for Programmable Instruments) communication. It uses SCPIParser extensively to handle SCPI commands and responses, and it is designed to work with the SCPIClient module. It is specific to this instrument and is not a general-purpose SCPI server.
+
+.. automodule:: SCPIServer
+   :members:
+   :private-members:
+   :undoc-members:
+   :show-inheritance:
+   :special-members:

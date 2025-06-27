@@ -51,6 +51,9 @@ class Tree:
         Args:
             name (str): The name of the command or node.
             value (callable, optional): The function associated with this command. Defaults to None.
+        
+        Example:
+            >>> tree = Tree('MEASURE', lambda x: x * 2)
         """
         self.name = name
         self.value = value
@@ -69,6 +72,9 @@ class Tree:
         Args:
             name (list): A list of command segments.
             value (callable): The function to associate with the command.
+        
+        Example:
+            >>> tree.add(['MEASURE', 'VOLTAGE?'], lambda x: x * 2)
         """
         if len(name) == 0:
             self.value = value
@@ -87,6 +93,12 @@ class Tree:
         
         Returns:
             callable: The function associated with the command, or None if not found.
+        
+        Example:
+            >>> func = tree.get(['MEASURE', 'VOLTAGE?'])
+            >>> if func:
+            >>>     result = func(5)  # Assuming func is a callable
+            >>>     print(result)
         """
         if len(name) == 0:
             return self.value
@@ -96,15 +108,23 @@ class Tree:
         return child.get(name[1:])
     
 class SCPIParser:
-    """A parser for SCPI commands that allows registration and execution of commands."""
+    """A parser for SCPI commands that allows registration and execution of commands.
+    
+    Attributes:
+            commands (Tree): A tree structure to hold the command names and their associated functions.
+    """
     def __init__(self, commands=dict()):
         """Initialize the SCPIParser with a dictionary of commands.
         
         Args:
             commands (dict): A dictionary where keys are command names and values are functions to execute.
         
-        Attributes:
-            commands (Tree): A tree structure to hold the command names and their associated functions.
+        Example:
+            >>> commands = {
+            >>>    'MEASURE:VOLTAGE?': measure_voltage,
+            >>>    'MEASURE:CURRENT?': lambda x: measure_current(x),
+            >>> }
+            >>> parser = SCPIParser(commands)
         """
         self.commands = Tree('')
         for name, value in commands.items():
@@ -119,6 +139,11 @@ class SCPIParser:
         
         Returns:
             function: The decorator function that registers the command.
+        
+        Example:
+            >>> @parser.register('MEASURE:VOLTAGE?')
+            >>> def measure_voltage():
+            >>>     return 'Voltage measured'
         """
         def decorator(func):
             for n in name_parser(name):
@@ -134,6 +159,10 @@ class SCPIParser:
         
         Returns:
             str: The results of the executed commands, joined by commas.
+        
+        Example:
+            >>> result = parser.execute('MEASURE:VOLTAGE?; :MEASURE:CURRENT?')
+            >>> print(result)
         """
         commands = string.split(";")
         results = []
