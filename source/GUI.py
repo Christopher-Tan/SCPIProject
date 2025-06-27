@@ -1,3 +1,8 @@
+"""This is the main GUI for the Coupling Measurer application.
+
+Attributes:
+    instrument (CouplingMeasurer): The instrument wrapper used for communication."""
+
 ip = "146.136.39.137"
 port = 50024
 

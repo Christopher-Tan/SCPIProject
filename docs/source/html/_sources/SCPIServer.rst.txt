@@ -7,4 +7,11 @@ It is specific to this instrument and is not a general-purpose SCPI server.
 .. automodule:: SCPIServer
    :members:
    :private-members:
-   :undoc
+   :undoc-members:
+   :show-inheritance:
+   :special-members:
+
+.. toctree::
+   :maxdepth: 2
+
+   CouplingMeasurement

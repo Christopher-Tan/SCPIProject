@@ -13,7 +13,7 @@ Welcome to SCPIProject's documentation!
    SCPIClient
    SCPIServer
    SCPIParser
-
+   CouplingMeasurer
 
 Indices and tables
 ==================

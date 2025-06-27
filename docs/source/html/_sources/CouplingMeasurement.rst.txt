@@ -8,4 +8,5 @@ This module performs the actual measurements and interfaces with the GPIO pins t
    :private-members:
    :undoc-members:
    :show-inheritance:
-   :special-members:
+   :special-members: __init__
+   :exclude-members: initCouplingMeasurement, startMeasurement, init

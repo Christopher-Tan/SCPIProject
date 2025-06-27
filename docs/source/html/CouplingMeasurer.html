@@ -1,0 +1,243 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>CouplingMeasurer.py &#8212; SCPIProject  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="SCPIParser.Tree" href="generated/SCPIParser.Tree.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="couplingmeasurer-py">
+<h1>CouplingMeasurer.py<a class="headerlink" href="#couplingmeasurer-py" title="Permalink to this heading">¶</a></h1>
+<p>This module provides a class for measuring the coupling of a transformer. It is compliant with the pymeasure Instrument class.</p>
+<span class="target" id="module-OST.CouplingMeasurer"></span><dl class="py class">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">OST.CouplingMeasurer.</span></span><span class="sig-name descname"><span class="pre">CouplingMeasurer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adapter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Coupling</span> <span class="pre">Measurer'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/OST/CouplingMeasurer.html#CouplingMeasurer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Instrument</span></code></p>
+<p>A class to interface with a coupling measurement instrument.
+This class provides methods to control the instrument and retrieve measurement data.
+It allows setting the frequency and voltage for measurements, and retrieving various coupling parameters.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.L1">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">L1</span></span><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.L1" title="Permalink to this definition">¶</a></dt>
+<dd><p>A property that returns the inductance of the primary winding L1.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.L2">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">L2</span></span><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.L2" title="Permalink to this definition">¶</a></dt>
+<dd><p>A property that returns the inductance of the secondary winding L2.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.Lm">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Lm</span></span><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.Lm" title="Permalink to this definition">¶</a></dt>
+<dd><p>A property that returns the mutual inductance Lm.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.Lp">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Lp</span></span><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.Lp" title="Permalink to this definition">¶</a></dt>
+<dd><p>A property that returns the primary inductance Lp.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.Ls">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Ls</span></span><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.Ls" title="Permalink to this definition">¶</a></dt>
+<dd><p>A property that returns the self-inductance Ls.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.Ls1_prim">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Ls1_prim</span></span><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.Ls1_prim" title="Permalink to this definition">¶</a></dt>
+<dd><p>A property that returns the primary inductance of the first winding Ls1_prim.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.Ls2_prim">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Ls2_prim</span></span><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.Ls2_prim" title="Permalink to this definition">¶</a></dt>
+<dd><p>A property that returns the primary inductance of the second winding Ls2_prim.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.N">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">N</span></span><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.N" title="Permalink to this definition">¶</a></dt>
+<dd><p>A property that returns the turns ratio N.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adapter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Coupling</span> <span class="pre">Measurer'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/OST/CouplingMeasurer.html#CouplingMeasurer.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the CouplingMeasurer with the specified adapter and name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adapter</strong> – The communication adapter for the instrument.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – The name of the instrument, default is “Coupling Measurer”.</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments for the Instrument class.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.frequency">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">frequency</span></span><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.frequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>A floating point property that controls the frequency of the measurement.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.k">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">k</span></span><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.k" title="Permalink to this definition">¶</a></dt>
+<dd><p>A property that returns the coupling coefficient K.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.k1">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">k1</span></span><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.k1" title="Permalink to this definition">¶</a></dt>
+<dd><p>A property that returns the primary coupling coefficient K1.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.k2">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">k2</span></span><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.k2" title="Permalink to this definition">¶</a></dt>
+<dd><p>A property that returns the secondary coupling coefficient K2.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.measure">
+<span class="sig-name descname"><span class="pre">measure</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/OST/CouplingMeasurer.html#CouplingMeasurer.measure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.measure" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.nPrim">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nPrim</span></span><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.nPrim" title="Permalink to this definition">¶</a></dt>
+<dd><p>An integer property that controls the number of primary turns.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.nSec">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nSec</span></span><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.nSec" title="Permalink to this definition">¶</a></dt>
+<dd><p>An integer property that controls the number of secondary turns.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.v1">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">v1</span></span><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.v1" title="Permalink to this definition">¶</a></dt>
+<dd><p>A property that returns the voltage V1.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.v2">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">v2</span></span><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.v2" title="Permalink to this definition">¶</a></dt>
+<dd><p>A property that returns the voltage V2.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OST.CouplingMeasurer.CouplingMeasurer.voltage">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">voltage</span></span><a class="headerlink" href="#OST.CouplingMeasurer.CouplingMeasurer.voltage" title="Permalink to this definition">¶</a></dt>
+<dd><p>A floating point property that controls the voltage level of the measurement.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">SCPIProject</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="SCPIClient.html">SCPIClient.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCPIServer.html">SCPIServer.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCPIParser.html">SCPIParser.py</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">CouplingMeasurer.py</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="generated/SCPIParser.Tree.html" title="previous chapter">SCPIParser.Tree</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2025, Christopher Tan, OST.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/CouplingMeasurer.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

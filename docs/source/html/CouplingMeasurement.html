@@ -55,4 +55,128 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="CouplingMeasurement.Measurements.set">
-<span class="sig-name descname"><span class="pre">set</span></span><span 
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CouplingMeasurement.html#Measurements.set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#CouplingMeasurement.Measurements.set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the measurements from a string representation.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CouplingMeasurement.measure">
+<span class="sig-prename descclassname"><span class="pre">CouplingMeasurement.</span></span><span class="sig-name descname"><span class="pre">measure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">voltLvl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Prim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CouplingMeasurement.html#measure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#CouplingMeasurement.measure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Measure the coupling of a transformer with given primary and secondary turns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>freq</strong> (<em>float</em>) – Frequency for the measurement in Hz.</p></li>
+<li><p><strong>voltLvl</strong> (<em>float</em>) – Voltage level for the measurement in V.</p></li>
+<li><p><strong>Prim</strong> (<em>int</em>) – Number of primary turns.</p></li>
+<li><p><strong>Sec</strong> (<em>int</em>) – Number of secondary turns.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing the measured values:</dt><dd><ul class="simple">
+<li><p>L1: Inductance of the primary side in H.</p></li>
+<li><p>L2: Inductance of the secondary side in H.</p></li>
+<li><p>v1: Voltage on the primary side in V.</p></li>
+<li><p>v2: Voltage on the secondary side in V.</p></li>
+<li><p>k: Coupling factor.</p></li>
+<li><p>k1: Coupling factor for primary to secondary.</p></li>
+<li><p>k2: Coupling factor for secondary to primary.</p></li>
+<li><p>Ls1_prim: Stray inductance on the primary side in H.</p></li>
+<li><p>Lm: Magnetizing inductance in H.</p></li>
+<li><p>Ls2_prim: Stray inductance on the secondary side reflected to primary in H.</p></li>
+<li><p>Ls: Total stray inductance in H.</p></li>
+<li><p>Lp: Primary inductance in H.</p></li>
+<li><p>N: Winding ratio (secondary to primary).</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">SCPIProject</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="SCPIClient.html">SCPIClient.py</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="SCPIServer.html">SCPIServer.py</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">CouplingMeasurement.py</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="SCPIParser.html">SCPIParser.py</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="SCPIServer.html">SCPIServer.py</a><ul>
+      <li>Previous: <a href="SCPIServer.html" title="previous chapter">SCPIServer.py</a></li>
+      <li>Next: <a href="SCPIParser.html" title="next chapter">SCPIParser.py</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2025, Christopher Tan, OST.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/CouplingMeasurement.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

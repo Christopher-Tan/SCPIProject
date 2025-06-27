@@ -36,7 +36,19 @@
             
   <section id="gui-py">
 <h1>GUI.py<a class="headerlink" href="#gui-py" title="Permalink to this heading">¶</a></h1>
-<p>This module provides a web interface for the application using Streamlit. It allows users to interact with SCPI devices through a graphical interface, making it easier to send commands and view responses.</p>
+<p>This module provides a web interface for the application using Streamlit. It allows users to interact with SCPI devices through a graphical interface, making it easier to send commands and view responses.  It uses the <cite>CouplingMeasurer.py</cite> module to communicate with the instrument.</p>
+<span class="target" id="module-GUI"></span><p>This is the main GUI for the Coupling Measurer application.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="GUI.instrument">
+<span class="sig-prename descclassname"><span class="pre">GUI.</span></span><span class="sig-name descname"><span class="pre">instrument</span></span><a class="headerlink" href="#GUI.instrument" title="Permalink to this definition">¶</a></dt>
+<dd><p>The instrument wrapper used for communication.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="CouplingMeasurer.html#OST.CouplingMeasurer.CouplingMeasurer" title="OST.CouplingMeasurer.CouplingMeasurer">CouplingMeasurer</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -64,6 +76,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="SCPIServer.html">SCPIServer.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="SCPIParser.html">SCPIParser.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CouplingMeasurer.html">CouplingMeasurer.py</a></li>
 </ul>
 
 <div class="relations">
