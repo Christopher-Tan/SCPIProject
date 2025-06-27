@@ -1,7 +1,38 @@
 from pymeasure.instruments import Instrument
 
 class CouplingMeasurer(Instrument):
+    """A class to interface with a coupling measurement instrument.
+    This class provides methods to control the instrument and retrieve measurement data.
+    It allows setting the frequency and voltage for measurements, and retrieving various coupling parameters.
+    """
     def __init__(self, adapter, name="Coupling Measurer", **kwargs):
+        """Initialize the CouplingMeasurer with the specified adapter and name.
+        
+        Args:
+            adapter: The communication adapter for the instrument.
+            name (str): The name of the instrument, default is "Coupling Measurer".
+            **kwargs: Additional keyword arguments for the Instrument class.
+            
+        Attributes:
+            frequency (Instrument.control): A property to control the frequency of the measurement.
+            voltage (Instrument.control): A property to control the voltage level of the measurement.
+            measure (Instrument.command): A method to initiate a measurement.
+            k (Instrument.measurement): A property to retrieve the coupling coefficient K.
+            k1 (Instrument.measurement): A property to retrieve the primary coupling coefficient K1.
+            k2 (Instrument.measurement): A property to retrieve the secondary coupling coefficient K2.
+            Ls1_prim (Instrument.measurement): A property to retrieve the primary inductance of the first winding Ls1_prim.
+            Lm (Instrument.measurement): A property to retrieve the mutual inductance Lm.
+            Ls2_prim (Instrument.measurement): A property to retrieve the primary inductance of the second winding Ls2_prim.
+            Ls (Instrument.measurement): A property to retrieve the self-inductance Ls.
+            Lp (Instrument.measurement): A property to retrieve the primary inductance Lp.
+            N (Instrument.measurement): A property to retrieve the turns ratio N.
+            v1 (Instrument.measurement): A property to retrieve the voltage V1.
+            v2 (Instrument.measurement): A property to retrieve the voltage V2.
+            nPrim (Instrument.control): A property to control the number of primary turns.
+            nSec (Instrument.control): A property to control the number of secondary turns.
+            L1 (Instrument.measurement): A property to retrieve the inductance of the primary winding L1.
+            L2 (Instrument.measurement): A property to retrieve the inductance of the secondary winding L2.
+        """
         super().__init__(
             adapter,
             name,

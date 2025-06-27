@@ -201,6 +201,30 @@ def startMeasurement():
     return L1, L2, v1, v2, k, k1, k2, Ls1_prim, Lm, Ls2_prim, Ls, Lp, N
 
 def measure(freq=20e3, voltLvl=3, Prim=30, Sec=2):
+    """Measure the coupling of a transformer with given primary and secondary turns.
+    
+    Args:
+        freq (float): Frequency for the measurement in Hz.
+        voltLvl (float): Voltage level for the measurement in V.
+        Prim (int): Number of primary turns.
+        Sec (int): Number of secondary turns.
+    
+    Returns:
+        tuple: A tuple containing the measured values:
+            - L1: Inductance of the primary side in H.
+            - L2: Inductance of the secondary side in H.
+            - v1: Voltage on the primary side in V.
+            - v2: Voltage on the secondary side in V.
+            - k: Coupling factor.
+            - k1: Coupling factor for primary to secondary.
+            - k2: Coupling factor for secondary to primary.
+            - Ls1_prim: Stray inductance on the primary side in H.
+            - Lm: Magnetizing inductance in H.
+            - Ls2_prim: Stray inductance on the secondary side reflected to primary in H.
+            - Ls: Total stray inductance in H.
+            - Lp: Primary inductance in H.
+            - N: Winding ratio (secondary to primary).
+    """
     global nPrim, nSec
     nPrim, nSec = Prim, Sec
     initCouplingMeasurement(freq, voltLvl)

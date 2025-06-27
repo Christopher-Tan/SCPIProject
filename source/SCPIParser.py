@@ -44,18 +44,32 @@ def match(query, key):
     return query.upper() == key.upper() or query.upper() == ''.join([i for i in key if i.isupper() or i == '?'])
 
 class Tree:
+    """A tree structure to hold SCPI command names and their associated functions."""
     def __init__(self, name, value=None):
+        """Initialize a tree node with a name and an optional functional value.
+        
+        Args:
+            name (str): The name of the command or node.
+            value (callable, optional): The function associated with this command. Defaults to None.
+        """
         self.name = name
         self.value = value
         self.children = []
 
     def select_child(self, name):
+        """Select a matching child node based on the provided name."""
         for child in self.children:
             if match(name, child.name):
                 return child
         return None
     
     def add(self, name, value):
+        """Add a new command name, and function pair to the tree.
+        
+        Args:
+            name (list): A list of command segments.
+            value (callable): The function to associate with the command.
+        """
         if len(name) == 0:
             self.value = value
             return
@@ -66,6 +80,14 @@ class Tree:
         child.add(name[1:], value)
     
     def get(self, name):
+        """Retrieve the function associated with the command name.
+        
+        Args:
+            name (list): A list of command segments.
+        
+        Returns:
+            callable: The function associated with the command, or None if not found.
+        """
         if len(name) == 0:
             return self.value
         child = self.select_child(name[0])
@@ -74,13 +96,30 @@ class Tree:
         return child.get(name[1:])
     
 class SCPIParser:
+    """A parser for SCPI commands that allows registration and execution of commands."""
     def __init__(self, commands=dict()):
+        """Initialize the SCPIParser with a dictionary of commands.
+        
+        Args:
+            commands (dict): A dictionary where keys are command names and values are functions to execute.
+        
+        Attributes:
+            commands (Tree): A tree structure to hold the command names and their associated functions.
+        """
         self.commands = Tree('')
         for name, value in commands.items():
             for n in name_parser(name):
                 self.commands.add(n, value)
     
     def register(self, name):
+        """Decorator to register a function as a SCPI command.
+        
+        Args:
+            name (str): The command name to register the function under.
+        
+        Returns:
+            function: The decorator function that registers the command.
+        """
         def decorator(func):
             for n in name_parser(name):
                 self.commands.add(n, func)
@@ -88,6 +127,14 @@ class SCPIParser:
         return decorator
     
     def execute(self, string):
+        """Execute a SCPI command string and return the results.
+        
+        Args:
+            string (str): The SCPI command string to execute.
+        
+        Returns:
+            str: The results of the executed commands, joined by commas.
+        """
         commands = string.split(";")
         results = []
         context = ':'
