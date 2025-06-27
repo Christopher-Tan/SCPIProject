@@ -3,7 +3,7 @@
 Attributes:
     instrument (CouplingMeasurer): The instrument wrapper used for communication."""
 
-ip = "146.136.39.137"
+ip = "PIIES002.ost.ch"
 port = 50024
 
 import streamlit as st
