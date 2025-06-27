@@ -1,0 +1,352 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CouplingMeasurement &#8212; SCPIProject  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for CouplingMeasurement</h1><div class="highlight"><pre>
+<span></span><span class="c1">#get temp debug</span>
+<span class="kn">from</span> <span class="nn">pymeasure.instruments.agilent</span> <span class="kn">import</span> <span class="n">Agilent34465A</span>
+<span class="c1">#from pymeasure.instruments.rohdeschwarz import HMP4030</span>
+<span class="kn">from</span> <span class="nn">pymeasure.instruments.rohdeschwarz</span> <span class="kn">import</span> <span class="n">Hmc804X</span>
+<span class="kn">from</span> <span class="nn">pymeasure.instruments.keysight</span> <span class="kn">import</span> <span class="n">KeysightE4980AL</span>
+<span class="c1">#from pymeasureauxiliary.dynplot import Dynplt</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">lgpio</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;lgpio module not found. Please install it to use GPIO functionality.&quot;</span><span class="p">)</span>
+    <span class="n">lgpio</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Measurements"><a class="viewcode-back" href="../CouplingMeasurement.html#CouplingMeasurement.Measurements">[docs]</a><span class="k">class</span> <span class="nc">Measurements</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class to hold the measurements of a transformer coupling measurement.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Measurements.__init__"><a class="viewcode-back" href="../CouplingMeasurement.html#CouplingMeasurement.Measurements.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">=</span> <span class="mf">20e3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">voltLvl</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k1</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k2</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Ls1_prim</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Lm</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Ls2_prim</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Ls</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Lp</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nPrim</span> <span class="o">=</span> <span class="mi">30</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nSec</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v1</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v2</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">L1</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">L2</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span></div>
+        
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a string representation of the measurements.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">freq</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">voltLvl</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k1</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k2</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Ls1_prim</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lm</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Ls2_prim</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Ls</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lp</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nPrim</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nSec</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v1</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v2</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L1</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L2</span><span class="p">)])</span>
+        
+<div class="viewcode-block" id="Measurements.set"><a class="viewcode-back" href="../CouplingMeasurement.html#CouplingMeasurement.Measurements.set">[docs]</a>    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the measurements from a string representation.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltLvl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ls1_prim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ls2_prim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ls</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nPrim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nSec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">L1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">L2</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)]</span></div>
+    
+<div class="viewcode-block" id="Measurements.measure"><a class="viewcode-back" href="../CouplingMeasurement.html#CouplingMeasurement.Measurements.measure">[docs]</a>    <span class="k">def</span> <span class="nf">measure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform the measurement and update the attributes.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">L1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">L2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ls1_prim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ls2_prim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ls</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="n">measure</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">freq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltLvl</span><span class="p">)</span></div></div>
+
+<span class="n">nPrim</span><span class="p">,</span> <span class="n">nSec</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">coupMeas_DMM1</span><span class="p">,</span> <span class="n">coupMeas_DMM2</span><span class="p">,</span> <span class="n">coupMeas_LCR</span><span class="p">,</span> <span class="n">chip</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
+
+<span class="k">def</span> <span class="nf">init</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the measurement setup.&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">nPrim</span><span class="p">,</span> <span class="n">nSec</span><span class="p">,</span> <span class="n">coupMeas_DMM1</span><span class="p">,</span> <span class="n">coupMeas_DMM2</span><span class="p">,</span> <span class="n">coupMeas_LCR</span><span class="p">,</span> <span class="n">chip</span>
+
+    <span class="c1"># set parameter</span>
+    <span class="n">nPrim</span> <span class="o">=</span> <span class="mi">30</span>
+    <span class="n">nSec</span> <span class="o">=</span>  <span class="mi">2</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">nSec</span><span class="o">/</span><span class="n">nPrim</span>
+
+    <span class="c1"># init devices for coupling measurement</span>
+    <span class="n">coupMeas_DMM1</span> <span class="o">=</span> <span class="n">Agilent34465A</span><span class="p">(</span><span class="s1">&#39;TCPIP0::MMIES013.ost.ch::INSTR&#39;</span><span class="p">)</span>
+    <span class="n">coupMeas_DMM2</span> <span class="o">=</span> <span class="n">Agilent34465A</span><span class="p">(</span><span class="s1">&#39;TCPIP0::MMies017.ost.ch::INSTR&#39;</span><span class="p">)</span>
+    <span class="n">coupMeas_LCR</span> <span class="o">=</span> <span class="n">KeysightE4980AL</span><span class="p">(</span><span class="s1">&#39;TCPIP0::LMGies001.ost.ch::INSTR&#39;</span><span class="p">)</span>
+
+    <span class="n">coupMeas_DMM1</span><span class="o">.</span><span class="n">resetError</span><span class="p">()</span>
+    <span class="n">coupMeas_DMM2</span><span class="o">.</span><span class="n">resetError</span><span class="p">()</span>
+    
+    <span class="n">chip</span> <span class="o">=</span> <span class="n">lgpio</span><span class="o">.</span><span class="n">gpiochip_open</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">initCouplingMeasurement</span><span class="p">(</span><span class="n">freq</span><span class="o">=</span><span class="mf">20e3</span><span class="p">,</span> <span class="n">voltLvl</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="c1"># init LCR meter</span>
+    <span class="n">coupMeas_LCR</span><span class="o">.</span><span class="n">initCouplingMeasurement</span><span class="p">(</span><span class="n">freq</span><span class="o">=</span><span class="n">freq</span><span class="p">,</span> <span class="n">voltLvl</span><span class="o">=</span><span class="n">voltLvl</span><span class="p">)</span>
+
+    <span class="c1"># init power supply</span>
+    <span class="c1"># coupMeas_PS.write(&#39;*RST&#39;)</span>
+    <span class="c1"># init channels 1-n</span>
+    <span class="n">channels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">18</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">14</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
+        <span class="n">lgpio</span><span class="o">.</span><span class="n">gpio_claim_output</span><span class="p">(</span><span class="n">chip</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+        <span class="n">lgpio</span><span class="o">.</span><span class="n">gpio_write</span><span class="p">(</span><span class="n">chip</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    
+    <span class="c1"># init digital multimeter</span>
+    <span class="n">multimeters</span> <span class="o">=</span> <span class="p">[</span><span class="n">coupMeas_DMM1</span><span class="p">,</span> <span class="n">coupMeas_DMM2</span><span class="p">]</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;DMM 1&quot;</span><span class="p">,</span> <span class="s2">&quot;DMM 2&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">dmm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">multimeters</span><span class="p">):</span>
+        <span class="n">dmm</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="n">dmm</span><span class="o">.</span><span class="n">confVolt</span><span class="p">(</span><span class="n">ACDC</span><span class="o">=</span><span class="s2">&quot;AC&quot;</span><span class="p">)</span>
+        <span class="n">dmm</span><span class="o">.</span><span class="n">setLabel</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+        <span class="n">dmm</span><span class="o">.</span><span class="n">initTrigger</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s2">&quot;BUS&quot;</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="s2">&quot;MIN&quot;</span><span class="p">)</span>
+        <span class="c1"># dmm.write(&quot;TRIG:DEL:AUTO ON&quot;)</span>
+        <span class="n">dmm</span><span class="o">.</span><span class="n">startMeasurement</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">startMeasurement</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">setVoltage</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">voltages</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">voltages</span><span class="p">):</span>
+            <span class="n">lgpio</span><span class="o">.</span><span class="n">gpio_write</span><span class="p">(</span><span class="n">chip</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">getDMMmeasurements</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+        <span class="n">coupMeas_DMM1</span><span class="o">.</span><span class="n">startMeasurement</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">)</span>
+        <span class="n">coupMeas_DMM2</span><span class="o">.</span><span class="n">startMeasurement</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">)</span>
+
+        <span class="n">val_dmm1</span> <span class="o">=</span> <span class="n">coupMeas_DMM1</span><span class="o">.</span><span class="n">getMeasurement</span><span class="p">()</span>
+        <span class="n">val_dmm2</span> <span class="o">=</span> <span class="n">coupMeas_DMM2</span><span class="o">.</span><span class="n">getMeasurement</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">val_dmm1</span><span class="p">,</span> <span class="n">val_dmm2</span>
+
+<span class="c1"># step 1: perform LCR measurement</span>
+    <span class="n">delay</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="n">channels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">18</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">14</span><span class="p">]</span>
+    <span class="n">voltages</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">setVoltage</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">voltages</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Raw values from measurement&#39;</span><span class="p">)</span>
+
+    <span class="n">L1</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">coupMeas_LCR</span><span class="o">.</span><span class="n">startMeasurement</span><span class="p">())</span> <span class="c1"># return inductance in SI-unit</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;L1 = </span><span class="si">%3.3f</span><span class="s1"> uH&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">L1</span><span class="o">*</span><span class="mf">1e6</span><span class="p">))</span>    
+
+<span class="c1"># step 2: perform DMM1 and DMM2 measurement</span>
+    <span class="n">channels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">14</span><span class="p">]</span>
+    <span class="n">voltages</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">setVoltage</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">voltages</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.8</span><span class="p">)</span> <span class="c1"># prevent error</span>
+    <span class="p">[</span><span class="n">v1_1</span><span class="p">,</span> <span class="n">v2_1</span><span class="p">]</span> <span class="o">=</span> <span class="n">getDMMmeasurements</span><span class="p">()</span>
+
+<span class="c1"># step 3: swap DMMs and perform measurement again (DMM1 &lt;-&gt; DMM2)</span>
+    <span class="n">channels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">15</span><span class="p">]</span>
+    <span class="n">voltages</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">setVoltage</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">voltages</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span>
+    <span class="p">[</span><span class="n">v1_2</span><span class="p">,</span> <span class="n">v2_2</span><span class="p">]</span> <span class="o">=</span> <span class="n">getDMMmeasurements</span><span class="p">()</span>
+
+    <span class="c1"># turn off all channels</span>
+    <span class="n">channels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">18</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">14</span><span class="p">]</span>
+    <span class="n">voltages</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">setVoltage</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">voltages</span><span class="p">)</span>
+
+    <span class="c1"># calculate coupling factor</span>
+    <span class="n">v1</span> <span class="o">=</span> <span class="p">(</span><span class="n">v1_1</span> <span class="o">+</span> <span class="n">v2_2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+    <span class="n">v2</span> <span class="o">=</span> <span class="p">(</span><span class="n">v2_1</span> <span class="o">+</span> <span class="n">v1_2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+    <span class="n">v1</span> <span class="o">=</span> <span class="n">v1_1</span>
+    <span class="n">v2</span> <span class="o">=</span> <span class="n">v2_1</span>
+    <span class="n">k1</span> <span class="o">=</span> <span class="n">v2</span><span class="o">/</span><span class="n">v1</span><span class="o">*</span><span class="n">nPrim</span><span class="o">/</span><span class="n">nSec</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">v2</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;k1 = </span><span class="si">%3.4f</span><span class="s1">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">k1</span><span class="p">))</span>
+
+<span class="c1"># step 4: perform LCR measurement on secondary side (same as step 1)</span>
+    <span class="n">channels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">18</span><span class="p">]</span>
+    <span class="n">voltages</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">setVoltage</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">voltages</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span>
+
+    <span class="n">L2</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">coupMeas_LCR</span><span class="o">.</span><span class="n">startMeasurement</span><span class="p">())</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;L2 = </span><span class="si">%3.3f</span><span class="s1"> uH&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">L2</span><span class="o">*</span><span class="mf">1e6</span><span class="p">))</span>
+
+<span class="c1"># step 5: perform DMM1 and DMM2 measurement (same as step 2)</span>
+    <span class="n">channels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">14</span><span class="p">]</span>
+    <span class="n">voltages</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">setVoltage</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">voltages</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span>
+    <span class="p">[</span><span class="n">v1_1</span><span class="p">,</span> <span class="n">v2_1</span><span class="p">]</span> <span class="o">=</span> <span class="n">getDMMmeasurements</span><span class="p">()</span>
+
+<span class="c1"># step 6: swap DMMs and perform measurement again (DMM1 &lt;-&gt; DMM2) (same as step 3)</span>
+    <span class="n">channels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">15</span><span class="p">]</span>
+    <span class="n">voltages</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">setVoltage</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">voltages</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span>
+    <span class="p">[</span><span class="n">v1_2</span><span class="p">,</span> <span class="n">v2_2</span><span class="p">]</span> <span class="o">=</span> <span class="n">getDMMmeasurements</span><span class="p">()</span>
+
+    <span class="c1"># turn off all channels</span>
+    <span class="n">channels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">18</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">14</span><span class="p">]</span>
+    <span class="n">voltages</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">setVoltage</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">voltages</span><span class="p">)</span>
+
+    <span class="c1"># calculate coupling factor</span>
+    <span class="n">v1</span> <span class="o">=</span> <span class="p">(</span><span class="n">v1_1</span> <span class="o">+</span> <span class="n">v2_2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+    <span class="n">v2</span> <span class="o">=</span> <span class="p">(</span><span class="n">v2_1</span> <span class="o">+</span> <span class="n">v1_2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+    <span class="n">v1</span> <span class="o">=</span> <span class="n">v1_1</span>
+    <span class="n">v2</span> <span class="o">=</span> <span class="n">v2_1</span>
+    <span class="n">k2</span> <span class="o">=</span> <span class="n">v1</span><span class="o">/</span><span class="n">v2</span><span class="o">*</span><span class="n">nSec</span><span class="o">/</span><span class="n">nPrim</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;k2 = </span><span class="si">%3.4f</span><span class="s1">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">k2</span><span class="p">))</span>
+
+<span class="c1"># calculation Party </span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">T-Model (reflected to primary side)&#39;</span><span class="p">)</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">k1</span><span class="o">*</span><span class="n">k2</span><span class="p">)</span>
+
+    <span class="n">Ls1_prim</span> <span class="o">=</span> <span class="n">L1</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">k1</span><span class="p">)</span>
+    <span class="n">Ls2_sec</span>  <span class="o">=</span><span class="n">L2</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">k2</span><span class="p">)</span>
+    <span class="n">Lm</span> <span class="o">=</span> <span class="n">L1</span><span class="o">*</span><span class="n">k1</span>
+    <span class="n">Ls2_prim</span> <span class="o">=</span> <span class="n">Ls2_sec</span> <span class="o">/</span> <span class="p">(</span><span class="n">nSec</span><span class="o">/</span><span class="n">nPrim</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="c1"># reflect stray inductance from secondary to primary side</span>
+
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ls1_prim = </span><span class="si">%f</span><span class="s2"> uH&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">Ls1_prim</span><span class="o">*</span><span class="mf">1e6</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Lm = </span><span class="si">%f</span><span class="s2"> uH&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">Lm</span><span class="o">*</span><span class="mf">1e6</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ls2_prim = </span><span class="si">%f</span><span class="s2"> uH&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">Ls2_prim</span><span class="o">*</span><span class="mf">1e6</span><span class="p">))</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Gamma-Model (representation on primary side)&#39;</span><span class="p">)</span>
+    <span class="n">Ls</span> <span class="o">=</span> <span class="n">Ls1_prim</span> <span class="o">+</span> <span class="n">Ls2_prim</span><span class="o">*</span><span class="n">Lm</span><span class="o">/</span><span class="p">(</span><span class="n">Ls2_prim</span><span class="o">+</span><span class="n">Lm</span><span class="p">)</span> <span class="c1"># stray inductance</span>
+    <span class="n">Lp</span> <span class="o">=</span> <span class="n">Lm</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="n">Ls2_prim</span> <span class="o">+</span> <span class="n">Lm</span><span class="p">)</span> <span class="c1"># magnetizing inductance</span>
+
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ls = </span><span class="si">%f</span><span class="s2"> uH&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">Ls</span><span class="o">*</span><span class="mf">1e6</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Lp = </span><span class="si">%f</span><span class="s2"> uH&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">Lp</span><span class="o">*</span><span class="mf">1e6</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Coupling k = </span><span class="si">%3.3f</span><span class="s1"> </span><span class="si">%%</span><span class="s1"> / k1 = </span><span class="si">%3.3f</span><span class="s1"> </span><span class="si">%%</span><span class="s1"> / k2 = </span><span class="si">%3.3f</span><span class="s1"> </span><span class="si">%%</span><span class="s1">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">k</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="n">k1</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="n">k2</span><span class="o">*</span><span class="mi">100</span><span class="p">))</span>
+
+    <span class="c1"># winding ratio</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">nSec</span><span class="o">/</span><span class="n">nPrim</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">Ls2_prim</span><span class="o">/</span><span class="n">Lm</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;N = </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">N</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;1/N = </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">N</span><span class="p">))</span>
+    
+    <span class="k">return</span> <span class="n">L1</span><span class="p">,</span> <span class="n">L2</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">Ls1_prim</span><span class="p">,</span> <span class="n">Lm</span><span class="p">,</span> <span class="n">Ls2_prim</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">Lp</span><span class="p">,</span> <span class="n">N</span>
+
+<div class="viewcode-block" id="measure"><a class="viewcode-back" href="../CouplingMeasurement.html#CouplingMeasurement.measure">[docs]</a><span class="k">def</span> <span class="nf">measure</span><span class="p">(</span><span class="n">freq</span><span class="o">=</span><span class="mf">20e3</span><span class="p">,</span> <span class="n">voltLvl</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">Prim</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">Sec</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Measure the coupling of a transformer with given primary and secondary turns.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        freq (float): Frequency for the measurement in Hz.</span>
+<span class="sd">        voltLvl (float): Voltage level for the measurement in V.</span>
+<span class="sd">        Prim (int): Number of primary turns.</span>
+<span class="sd">        Sec (int): Number of secondary turns.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: A tuple containing the measured values:</span>
+<span class="sd">            - L1: Inductance of the primary side in H.</span>
+<span class="sd">            - L2: Inductance of the secondary side in H.</span>
+<span class="sd">            - v1: Voltage on the primary side in V.</span>
+<span class="sd">            - v2: Voltage on the secondary side in V.</span>
+<span class="sd">            - k: Coupling factor.</span>
+<span class="sd">            - k1: Coupling factor for primary to secondary.</span>
+<span class="sd">            - k2: Coupling factor for secondary to primary.</span>
+<span class="sd">            - Ls1_prim: Stray inductance on the primary side in H.</span>
+<span class="sd">            - Lm: Magnetizing inductance in H.</span>
+<span class="sd">            - Ls2_prim: Stray inductance on the secondary side reflected to primary in H.</span>
+<span class="sd">            - Ls: Total stray inductance in H.</span>
+<span class="sd">            - Lp: Primary inductance in H.</span>
+<span class="sd">            - N: Winding ratio (secondary to primary).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">init</span><span class="p">()</span>
+    <span class="k">global</span> <span class="n">nPrim</span><span class="p">,</span> <span class="n">nSec</span>
+    <span class="n">nPrim</span><span class="p">,</span> <span class="n">nSec</span> <span class="o">=</span> <span class="n">Prim</span><span class="p">,</span> <span class="n">Sec</span>
+    <span class="n">initCouplingMeasurement</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">voltLvl</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">startMeasurement</span><span class="p">()</span></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">measure</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">SCPIProject</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../SCPIClient.html">SCPIClient.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SCPIServer.html">SCPIServer.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SCPIParser.html">SCPIParser.py</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2025, Christopher Tan, OST.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

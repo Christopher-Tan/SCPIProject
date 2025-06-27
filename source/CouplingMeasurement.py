@@ -8,7 +8,11 @@ import matplotlib.pyplot as plt
 import time
 import numpy as np
 
-import lgpio
+try:
+    import lgpio
+except ImportError:
+    print("lgpio module not found. Please install it to use GPIO functionality.")
+    lgpio = None
 
 class Measurements:
     """Class to hold the measurements of a transformer coupling measurement."""
@@ -43,21 +47,26 @@ class Measurements:
         """Perform the measurement and update the attributes."""
         self.L1, self.L2, self.v1, self.v2, self.k, self.k1, self.k2, self.Ls1_prim, self.Lm, self.Ls2_prim, self.Ls, self.Lp, self.N = measure(self.freq, self.voltLvl)
 
+nPrim, nSec, n, coupMeas_DMM1, coupMeas_DMM2, coupMeas_LCR, chip = '', '', '', '', '', '', ''
 
-# set parameter
-nPrim = 30
-nSec =  2
-n = nSec/nPrim
+def init():
+    """Initialize the measurement setup."""
+    global nPrim, nSec, coupMeas_DMM1, coupMeas_DMM2, coupMeas_LCR, chip
 
-# init devices for coupling measurement
-coupMeas_DMM1 = Agilent34465A('TCPIP0::MMIES013.ost.ch::INSTR')
-coupMeas_DMM2 = Agilent34465A('TCPIP0::MMies017.ost.ch::INSTR')
-coupMeas_LCR = KeysightE4980AL('TCPIP0::LMGies001.ost.ch::INSTR')
+    # set parameter
+    nPrim = 30
+    nSec =  2
+    n = nSec/nPrim
 
-coupMeas_DMM1.resetError()
-coupMeas_DMM2.resetError()
+    # init devices for coupling measurement
+    coupMeas_DMM1 = Agilent34465A('TCPIP0::MMIES013.ost.ch::INSTR')
+    coupMeas_DMM2 = Agilent34465A('TCPIP0::MMies017.ost.ch::INSTR')
+    coupMeas_LCR = KeysightE4980AL('TCPIP0::LMGies001.ost.ch::INSTR')
 
-chip = lgpio.gpiochip_open(4)
+    coupMeas_DMM1.resetError()
+    coupMeas_DMM2.resetError()
+    
+    chip = lgpio.gpiochip_open(4)
 
 def initCouplingMeasurement(freq=20e3, voltLvl=3):
     # init LCR meter
@@ -229,6 +238,7 @@ def measure(freq=20e3, voltLvl=3, Prim=30, Sec=2):
             - Lp: Primary inductance in H.
             - N: Winding ratio (secondary to primary).
     """
+    init()
     global nPrim, nSec
     nPrim, nSec = Prim, Sec
     initCouplingMeasurement(freq, voltLvl)

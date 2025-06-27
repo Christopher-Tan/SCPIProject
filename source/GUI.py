@@ -87,30 +87,31 @@ n = st_navbar(["Raw Data", "T-Model", "Gamma-Model"], adjust=False, styles={
     }
 )
 try:
-    match n:
-        case "Raw Data":
-            data = {
-                'L1': instrument.L1,
-                'L2': instrument.L2,
-                'k1': instrument.k1,
-                'v1': instrument.v1,
-                'v2': instrument.v2,
-            }
-        case "T-Model":
-            data = {
-                'Ls1_prim': instrument.Ls1_prim,
-                'Lm': instrument.Lm,
-                'Ls2_prim': instrument.Ls2_prim,
-            }
-        case "Gamma-Model":
-            data = {
-                'Ls': instrument.Ls,
-                'Lp': instrument.Lp,
-                'k': instrument.k,
-                'k1': instrument.k1,
-                'k2': instrument.k2,
-                'N': instrument.N,
-            }
+    if n == "Raw Data":
+        data = {
+            'L1': instrument.L1,
+            'L2': instrument.L2,
+            'k1': instrument.k1,
+            'v1': instrument.v1,
+            'v2': instrument.v2,
+        }
+    elif n == "T-Model":
+        data = {
+            'Ls1_prim': instrument.Ls1_prim,
+            'Lm': instrument.Lm,
+            'Ls2_prim': instrument.Ls2_prim,
+        }
+    elif n == "Gamma-Model":
+        data = {
+            'Ls': instrument.Ls,
+            'Lp': instrument.Lp,
+            'k': instrument.k,
+            'k1': instrument.k1,
+            'k2': instrument.k2,
+            'N': instrument.N,
+        }
+    else:
+        data = {}
 except Exception as e:
     print(e)
     data = {}

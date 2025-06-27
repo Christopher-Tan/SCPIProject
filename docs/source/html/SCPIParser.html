@@ -16,7 +16,8 @@
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="SCPIServer.py" href="SCPIServer.html" />
+    <link rel="next" title="SCPIParser.SCPIParser" href="generated/SCPIParser.SCPIParser.html" />
+    <link rel="prev" title="CouplingMeasurement.py" href="CouplingMeasurement.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -36,6 +37,16 @@
   <section id="scpiparser-py">
 <h1>SCPIParser.py<a class="headerlink" href="#scpiparser-py" title="Permalink to this heading">¶</a></h1>
 <p>This module provides a parser for SCPI (Standard Commands for Programmable Instruments) commands. It is designed to handle the parsing of SCPI commands and responses, making it easier to interact with SCPI devices. To be used on the instrument’s side.</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#SCPIParser.SCPIParser" title="SCPIParser.SCPIParser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SCPIParser.SCPIParser</span></code></a>([commands])</p></td>
+<td><p>A parser for SCPI commands that allows registration and execution of commands.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#SCPIParser.Tree" title="SCPIParser.Tree"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SCPIParser.Tree</span></code></a>(name[, value])</p></td>
+<td><p>A tree structure to hold SCPI command names and their associated functions.</p></td>
+</tr>
+</tbody>
+</table>
 <span class="target" id="module-SCPIParser"></span><dl class="py class">
 <dt class="sig sig-object py" id="SCPIParser.SCPIParser">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SCPIParser.</span></span><span class="sig-name descname"><span class="pre">SCPIParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">commands</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SCPIParser.html#SCPIParser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SCPIParser.SCPIParser" title="Permalink to this definition">¶</a></dt>
@@ -149,112 +160,4 @@
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<em>list</em>) – A list of command segments.</p></li>
-<li><p><strong>value</strong> (<em>callable</em>) – The function to associate with the command.</p></li>
-</ul>
-</dd>
-</dl>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;MEASURE&#39;</span><span class="p">,</span> <span class="s1">&#39;VOLTAGE?&#39;</span><span class="p">],</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="SCPIParser.Tree.get">
-<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SCPIParser.html#Tree.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SCPIParser.Tree.get" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retrieve the function associated with the command name.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> (<em>list</em>) – A list of command segments.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The function associated with the command, or None if not found.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>callable</p>
-</dd>
-</dl>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">func</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">get</span><span class="p">([</span><span class="s1">&#39;MEASURE&#39;</span><span class="p">,</span> <span class="s1">&#39;VOLTAGE?&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">func</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># Assuming func is a callable</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</dd></dl>
-
-</section>
-
-
-          </div>
-          
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">SCPIProject</a></h1>
-
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="SCPIClient.html">SCPIClient.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SCPIServer.html">SCPIServer.py</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">SCPIParser.py</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="SCPIServer.html" title="previous chapter">SCPIServer.py</a></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2025, Christopher Tan, OST.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="_sources/SCPIParser.rst.txt"
-          rel="nofollow">Page source</a>
-    </div>
-
-    
-
-    
-  </body>
-</html>
+<li><p><strong>value</strong> (<em>callable</em>) – The function to assoc

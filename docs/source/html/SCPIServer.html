@@ -16,7 +16,7 @@
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="SCPIParser.py" href="SCPIParser.html" />
+    <link rel="next" title="CouplingMeasurement.py" href="CouplingMeasurement.html" />
     <link rel="prev" title="GUI.py" href="GUI.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -36,7 +36,36 @@
             
   <section id="scpiserver-py">
 <h1>SCPIServer.py<a class="headerlink" href="#scpiserver-py" title="Permalink to this heading">¶</a></h1>
-<p>This module provides a server for SCPI (Standard Commands for Programmable Instruments) communication. It uses SCPIParser extensively to handle SCPI commands and responses, and it is designed to work with the SCPIClient module. It is specific to this instrument and is not a general-purpose SCPI server.</p>
+<p>This module provides a server for SCPI (Standard Commands for Programmable Instruments) communication. It uses SCPIParser extensively to handle SCPI commands and responses. It also uses the <cite>CouplingMeasurement.py</cite> module to perform the actual measurements.
+It is specific to this instrument and is not a general-purpose SCPI server.</p>
+<span class="target" id="module-SCPIServer"></span><p>SCPI Server for transformer coupling measurements.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SCPIServer.measurements">
+<span class="sig-prename descclassname"><span class="pre">SCPIServer.</span></span><span class="sig-name descname"><span class="pre">measurements</span></span><a class="headerlink" href="#SCPIServer.measurements" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of the Measurements class to hold measurement data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="CouplingMeasurement.html#CouplingMeasurement.Measurements" title="CouplingMeasurement.Measurements">Measurements</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SCPIServer.parser">
+<span class="sig-prename descclassname"><span class="pre">SCPIServer.</span></span><span class="sig-name descname"><span class="pre">parser</span></span><a class="headerlink" href="#SCPIServer.parser" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of the SCPIParser to handle SCPI commands</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="SCPIParser.html#SCPIParser.SCPIParser" title="SCPIParser.SCPIParser">SCPIParser</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="CouplingMeasurement.html">CouplingMeasurement.py</a></li>
+</ul>
+</div>
 </section>
 
 
@@ -59,55 +88,5 @@
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="SCPIClient.html">SCPIClient.py</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">SCPIServer.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SCPIParser.html">SCPIParser.py</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="GUI.html" title="previous chapter">GUI.py</a></li>
-      <li>Next: <a href="SCPIParser.html" title="next chapter">SCPIParser.py</a></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2025, Christopher Tan, OST.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="_sources/SCPIServer.rst.txt"
-          rel="nofollow">Page source</a>
-    </div>
-
-    
-
-    
-  </body>
-</html>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SCPIServer.py</a><ul>
+<li c

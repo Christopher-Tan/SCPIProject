@@ -5,10 +5,9 @@ This module provides a parser for SCPI (Standard Commands for Programmable Instr
 
 .. autosummary::
    :toctree: generated/
-   :maxdepth: 1
 
-   SCPIClient.SCPIClient
-   SCPIClient.Tree
+   SCPIParser.SCPIParser
+   SCPIParser.Tree
 
 .. automodule:: SCPIParser
    :members: SCPIParser, Tree

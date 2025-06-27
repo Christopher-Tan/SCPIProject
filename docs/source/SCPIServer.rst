@@ -14,4 +14,4 @@ It is specific to this instrument and is not a general-purpose SCPI server.
 .. toctree::
    :maxdepth: 2
 
-    CouplingMeasurement
+   CouplingMeasurement
