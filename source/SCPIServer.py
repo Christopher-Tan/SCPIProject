@@ -44,7 +44,7 @@ if __name__ == "__main__":
                     ":MEASure:COUPling:VOLTage": lambda volt: setattr(new_measurement, 'voltLvl', float(volt)),
                     ":MEASure:COUPling:NPRIMary": lambda nPrim: setattr(new_measurement, 'nPrim', int(nPrim)),
                     ":MEASure:COUPling:NSECondary": lambda nSec: setattr(new_measurement, 'nSec', int(nSec)),
-                    ":MEASure:COUPling:NUMBer?": lambda: len(measurements - 1),
+                    ":MEASure:COUPling:NUMBer?": lambda: len(measurements) - 1,
                     "*IDN?": lambda: "Raspberry Pi",
                     "*RST": lambda: (measurements := [Measurements()]),
                     

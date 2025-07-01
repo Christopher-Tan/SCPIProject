@@ -118,3 +118,23 @@ class CouplingMeasurer(Instrument):
     )
     
     channels = Instrument.MultiChannelCreator(CouplingMeasurement, list(range(1, n)))
+
+    frequency = Instrument.setting(
+        "MEASure:COUPling:FREQuency %g",
+        """Set the frequency for the measurement."""
+    )
+    
+    voltage = Instrument.setting(
+        "MEASure:COUPling:VOLTage %g",
+        """Set the voltage level for the measurement."""
+    )
+    
+    nPrim = Instrument.setting(
+        "MEASure:COUPling:NPRIMary %d",
+        """Set the number of primary turns."""
+    )
+    
+    nSec = Instrument.setting(
+        "MEASure:COUPling:NSECondary %d",
+        """Set the number of secondary turns."""
+    )
