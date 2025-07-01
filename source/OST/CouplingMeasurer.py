@@ -6,87 +6,87 @@ class CouplingMeasurement(Channel):
     """
     
     frequency = Channel.measurement(
-        "MEASure:COUPling:FREQ? {ch}",
+        "MEASure:HISTory:COUPling:FREQ? {ch}",
         """A floating point property that returns the frequency of the measurement.""",
     )
     
     voltage = Channel.measurement(
-        "MEASure:COUPling:VOLT? {ch}",
+        "MEASure:HISTory:COUPling:VOLT? {ch}",
         """A floating point property that returns the voltage level of the measurement.""",
     )
         
     k = Channel.measurement(
-        "MEASure:COUPling:K? {ch}",
+        "MEASure:HISTory:COUPling:K? {ch}",
         """A property that returns the coupling coefficient K."""
     )
     
     k1 = Channel.measurement(
-        "MEASure:COUPling:K1? {ch}",
+        "MEASure:HISTory:COUPling:K1? {ch}",
         """A property that returns the primary coupling coefficient K1."""
     )
     
     k2 = Channel.measurement(
-        "MEASure:COUPling:K2? {ch}",
+        "MEASure:HISTory:COUPling:K2? {ch}",
         """A property that returns the secondary coupling coefficient K2."""
     )
     
     Ls1_prim = Channel.measurement(
-        "MEASure:COUPling:LS1Prim? {ch}",
+        "MEASure:HISTory:COUPling:LS1Prim? {ch}",
         """A property that returns the primary inductance of the first winding Ls1_prim."""
     )
     
     Lm = Channel.measurement(
-        "MEASure:COUPling:LM? {ch}",
+        "MEASure:HISTory:COUPling:LM? {ch}",
         """A property that returns the mutual inductance Lm."""
     )
     
     Ls2_prim = Channel.measurement(
-        "MEASure:COUPling:LS2Prim? {ch}",
+        "MEASure:HISTory:COUPling:LS2Prim? {ch}",
         """A property that returns the primary inductance of the second winding Ls2_prim."""
     )
     
     Ls = Channel.measurement(
-        "MEASure:COUPling:LS? {ch}",
+        "MEASure:HISTory:COUPling:LS? {ch}",
         """A property that returns the self-inductance Ls."""
     )
     
     Lp = Channel.measurement(
-        "MEASure:COUPling:LP? {ch}",
+        "MEASure:HISTory:COUPling:LP? {ch}",
         """A property that returns the primary inductance Lp."""
     )
     
     N = Channel.measurement(
-        "MEASure:COUPling:N? {ch}",
+        "MEASure:HISTory:COUPling:N? {ch}",
         """A property that returns the turns ratio N."""
     )
     
     v1 = Channel.measurement(
-        "MEASure:COUPling:V1? {ch}",
+        "MEASure:HISTory:COUPling:V1? {ch}",
         """A property that returns the voltage V1."""
     )
     
     v2 = Channel.measurement(
-        "MEASure:COUPling:V2? {ch}",
+        "MEASure:HISTory:COUPling:V2? {ch}",
         """A property that returns the voltage V2."""
     )
     
     nPrim = Channel.measurement(
-        "MEASure:COUPling:NPRIMary? {ch}",
+        "MEASure:HISTory:COUPling:NPRIMary? {ch}",
         """A property that returns the number of primary turns."""
     )
     
     nSec = Channel.measurement(
-        "MEASure:COUPling:NSECondary? {ch}",
+        "MEASure:HISTory:COUPling:NSECondary? {ch}",
         """A property that returns the number of secondary turns."""
     )
     
     L1 = Channel.measurement(
-        "MEASure:COUPling:L1? {ch}",
+        "MEASure:HISTory:COUPling:L1? {ch}",
         """A property that returns the inductance of the primary winding L1."""
     )
     
     L2 = Channel.measurement(
-        "MEASure:COUPling:L2? {ch}",
+        "MEASure:HISTory:COUPling:L2? {ch}",
         """A property that returns the inductance of the secondary winding L2."""
     )
 
@@ -113,28 +113,32 @@ class CouplingMeasurer(Instrument):
         self.write("MEAS")
     
     n = Instrument.measurement(
-        "MEASure:COUPling:NUMBer?",
+        "MEASure:HISTory:COUPling:NUMBer?",
         """A property that returns the number of measurements taken."""
     )
     
     channels = Instrument.MultiChannelCreator(CouplingMeasurement, list(range(1, n)))
 
-    frequency = Instrument.setting(
+    frequency = Instrument.control(
+        "MEASure:COUPling:FREQuency?",
         "MEASure:COUPling:FREQuency %g",
-        """Set the frequency for the measurement."""
+        """A property that controls the frequency for the measurement."""
     )
     
-    voltage = Instrument.setting(
+    voltage = Instrument.control(
+        "MEASure:COUPling:VOLTage?",
         "MEASure:COUPling:VOLTage %g",
-        """Set the voltage level for the measurement."""
+        """A property that controls the voltage level for the measurement."""
     )
     
-    nPrim = Instrument.setting(
+    nPrim = Instrument.control(
+        "MEASure:COUPling:NPRIMary?",
         "MEASure:COUPling:NPRIMary %d",
-        """Set the number of primary turns."""
+        """A property that controls the number of primary turns."""
     )
     
-    nSec = Instrument.setting(
+    nSec = Instrument.control(
+        "MEASure:COUPling:NSECondary?",
         "MEASure:COUPling:NSECondary %d",
-        """Set the number of secondary turns."""
+        """A property that controls the number of secondary turns."""
     )
