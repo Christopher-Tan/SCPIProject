@@ -8,6 +8,7 @@ Attributes:
 import socket
 from CouplingMeasurement import Measurements
 from SCPIParser import SCPIParser
+from copy import copy
 
 if __name__ == "__main__":
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -20,6 +21,12 @@ if __name__ == "__main__":
             with conn:
                 measurements = [Measurements()]
                 new_measurement = Measurements()
+                
+                def measure():
+                    """Perform a measurement and update the new_measurement instance."""
+                    new_measurement.measure()
+                    measurements.append(copy(new_measurement))
+                    
                 parser = SCPIParser({
                     ":MEASure:HISTory:COUPling:K?": lambda measurement=-1: measurements[measurement].k,
                     ":MEASure:HISTory:COUPling:K1?": lambda measurement=-1: measurements[measurement].k1,
@@ -40,7 +47,7 @@ if __name__ == "__main__":
                     ":MEASure:HISTory:COUPling:L2?": lambda measurement=-1: measurements[measurement].L2,
                     ":MEASure:HISTory:COUPling?": lambda measurement=-1: measurements[measurement],
                     
-                    ":MEASure[:COUPling]": lambda: [new_measurement.measure(), measurements.append(new_measurement), new_measurement := Measurements()],
+                    ":MEASure[:COUPling]": measure,
                     ":MEASure:COUPling:FREQuency": lambda freq: setattr(new_measurement, 'freq', float(freq)),
                     ":MEASure:COUPling:VOLTage": lambda volt: setattr(new_measurement, 'voltLvl', float(volt)),
                     ":MEASure:COUPling:NPRIMary": lambda nPrim: setattr(new_measurement, 'nPrim', int(nPrim)),
@@ -52,7 +59,7 @@ if __name__ == "__main__":
                     
                     ":MEASure:HISTory:COUPling:NUMBer?": lambda: len(measurements) - 1,
                     "*IDN?": lambda: "Raspberry Pi",
-                    "*RST": lambda: (measurements := [Measurements()]),
+                    "*RST": new_measurement.__init__,
                     
                 })
                 while True:
@@ -64,7 +71,7 @@ if __name__ == "__main__":
                         cmd = line.strip()
                         print(cmd)
                         response = parser.execute(cmd)
-                        if cmd.endswith('?'):
+                        if response is not None:
                             conn.sendall(str(response).encode() + b'\n')
         except Exception as e:
             print(f"Error: {e}")

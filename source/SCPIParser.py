@@ -183,4 +183,6 @@ class SCPIParser:
             output = self.commands.get(context.split(':')[1:])(*arguments)
             if command.endswith('?'):
                 results.append(str(output))
-        return ', '.join(results)
+        if results:
+            return ', '.join(results)
+        return None
