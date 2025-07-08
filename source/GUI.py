@@ -16,14 +16,14 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     from math import log10, floor, isclose
     
     metric_prefixes = {
-        'y': 1e24, 
-        'z': 1e21,
-        'a': 1e18,
-        'f': 1e15,
-        'p': 1e12,
-        'n': 1e9,
-        'µ': 1e6,
-        'm': 1e3,
+        'y': 1e-24, 
+        'z': 1e-21,
+        'a': 1e-18,
+        'f': 1e-15,
+        'p': 1e-12,
+        'n': 1e-9,
+        'µ': 1e-6,
+        'm': 1e-3,
         '': 1,
         'k': 1e3,
         'M': 1e6,
@@ -124,8 +124,8 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     def refresh():
         st.session_state["refresh_after"] = True
         
-    if st.session_state["refresh_after"]:
-        st.session_state["refresh_after"] = False
+    if st.session_state["refresh_before"]:
+        st.session_state["refresh_before"] = False
         fetch()
     try:
         instrument.voltage = g.number_input("Voltage", key="voltage", format="%0.3f", on_change=refresh, step=1.0/st.session_state['voltage_scaling']) * st.session_state['voltage_scaling']
