@@ -68,13 +68,19 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         return value, units
     
     st.set_page_config(page_title="Coupling Measurements", layout="wide")
+    
+    if 'history' not in st.session_state:
+        st.session_state['history'] = 0
+        st.session_state['max_history'] = 0
 
     def fetch():
         if instrument:
-            st.session_state['voltage'] = instrument.voltage
-            st.session_state['frequency'] = instrument.frequency
-            st.session_state['nPrim'] = instrument.nPrim
-            st.session_state['nSec'] = instrument.nSec
+            st.session_state['voltage'], st.session_state['voltage_units'], st.session_state['voltage_scaling'] = replace_prefix(instrument.voltage, "V")
+            st.session_state['frequency'], st.session_state['frequency_units'], st.session_state['frequency_scaling'] = replace_prefix(instrument.frequency, "Hz")
+            st.session_state['nPrim'], st.session_state['nPrim_units'] = replace_suffix(instrument.nPrim, "Turns")
+            st.session_state['nSec'], st.session_state['nSec_units'] = replace_suffix(instrument.nSec, "Turns")
+            st.session_state['history'] = int(instrument.n)
+            st.session_state['max_history'] = int(instrument.n)
             
     from OST import CouplingMeasurer
     if 'instrument' not in st.session_state:
@@ -89,13 +95,14 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     else:
         instrument = st.session_state['instrument']
 
-    g = grid([2, 8, 3, 3], [1, 1, 1, 1, 4], vertical_align='center')
+    g = grid([2, 8, 3, 3], [1, 1, 1, 1, 1, 1, 1, 1], vertical_align='center')
 
     g.empty()
     g.title("Coupling Measurements")
     if g.button("Measure", args=(), key="measure_button"):
         try:
             instrument.measure()
+            fetch()
         except Exception as e:
             print(e)
             st.session_state.pop('instrument', None)
@@ -109,12 +116,31 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             print(e)
             st.session_state.pop('instrument', None)
             st.error(f"Failed to connect to and reset the instrument")
-
+            
+    if "refresh_before" not in st.session_state:
+        st.session_state["refresh_before"] = False
+        st.session_state["refresh_after"] = False
+        
+    def refresh():
+        st.session_state["refresh_after"] = True
+        
+    if st.session_state["refresh_after"]:
+        st.session_state["refresh_after"] = False
+        fetch()
     try:
-        instrument.voltage = g.number_input("Voltage", key="voltage")
-        instrument.frequency = g.number_input("Frequency", key="frequency")
-        instrument.nPrim = g.number_input("nPrim", key="nPrim")
-        instrument.nSec = g.number_input("nSec", key="nSec")
+        instrument.voltage = g.number_input("Voltage", key="voltage", format="%0.3f", on_change=refresh, step=1.0/st.session_state['voltage_scaling']) * st.session_state['voltage_scaling']
+        g.write(st.session_state['voltage_units'])
+        instrument.frequency = g.number_input("Frequency", key="frequency", format="%0.3f", on_change=refresh, step=1.0/st.session_state['frequency_scaling']) * st.session_state['frequency_scaling']
+        g.write(st.session_state['frequency_units'])
+        instrument.nPrim = g.number_input("nPrim", key="nPrim", on_change=refresh, step=1)
+        g.write(st.session_state['nPrim_units'])
+        instrument.nSec = g.number_input("nSec", key="nSec", on_change=refresh, step=1)
+        g.write(st.session_state['nSec_units'])
+        
+        if st.session_state["refresh_after"]:
+            st.session_state["refresh_after"] = False
+            st.session_state["refresh_before"] = True
+            st.rerun()
     except Exception as e:
         print(e)
         st.session_state.pop('instrument', None)
