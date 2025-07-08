@@ -12,7 +12,61 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     import streamlit as st
     from streamlit_extras.grid import grid
     from streamlit_navigation_bar import st_navbar
-
+    
+    from math import log10, floor, isclose
+    
+    metric_prefixes = {
+        'y': 1e24, 
+        'z': 1e21,
+        'a': 1e18,
+        'f': 1e15,
+        'p': 1e12,
+        'n': 1e9,
+        'µ': 1e6,
+        'm': 1e3,
+        '': 1,
+        'k': 1e3,
+        'M': 1e6,
+        'G': 1e9,
+        'T': 1e12,
+        'P': 1e15,
+        'E': 1e18,
+        'Z': 1e21,
+        'Y': 1e24,
+    }
+    def replace_prefix(value, units, recognize_prefix=True, prefixes=metric_prefixes):
+        scaling_factor = 1
+        if value == 0:
+            return value, units, scaling_factor
+        
+        prefixes = sorted(prefixes.items(), key=lambda x: len(x[0]), reverse=True)
+        
+        if recognize_prefix:
+            for prefix, factor in prefixes:
+                if prefix and units.startswith(prefix):
+                    value *= factor
+                    units = units[len(prefix):]
+                    scaling_factor /= factor
+                    break
+        
+        base_units = 10 ** (3 * floor(log10(value) + 1e-9) / 3)
+        value /= base_units
+        scaling_factor *= base_units
+        for prefix, factor in prefixes:
+            if isclose(factor, base_units):
+                units = prefix + units
+                return value, units, scaling_factor
+        return value * base_units, units, scaling_factor
+    
+    def replace_suffix(value, units, recognize_suffix=True, suffix='s'):
+        if recognize_suffix:
+            if suffix and units.endswith(suffix):
+                units = units[:-len(suffix)]
+        
+        if value >= 1 + 1e-9:
+            units += suffix
+        return value, units
+    
     st.set_page_config(page_title="Coupling Measurements", layout="wide")
 
     def fetch():
