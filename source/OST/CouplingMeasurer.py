@@ -108,9 +108,15 @@ class CouplingMeasurer(Instrument):
             name,
             **kwargs
         )
+        
+        self.add_child(CouplingMeasurement, 0)
+    
+    def reset(self):
+        self.write("*RST")
     
     def measure(self):
         self.write("MEAS")
+        self.add_child(CouplingMeasurement, int(self.n))
     
     n = Instrument.measurement(
         "MEASure:HISTory:COUPling:NUMBer?",
