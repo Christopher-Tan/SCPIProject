@@ -174,37 +174,73 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             },
         }
     )
+    
+    import schemdraw
+    import schemdraw.elements as elm
+    
+    from io import BytesIO
+    
+    def render(diagram):
+        buf = BytesIO()
+        diagram.save(buf, dpi=200)
+        buf.seek(0)
+        
+        _, i, _ = st.columns([1, 2, 1], vertical_alignment='center')
+        i.image(buf, use_column_width=True)
+        
+    def t_model(data):
+        with schemdraw.Drawing(show=False) as d:
+            t = elm.xform.Transformer().label(f'{data["nPrim"]} : {data["nSec"]}', fontsize=10) perfect
+            
+            p1 = elm.Line().up().at(t.p1).length(0.5)
+            p2 = elm.Line().down().at(t.p2).length(0.5)
+            s1 = elm.Line().up().at(t.s1).length(0.5)
+            s2 = elm.Line().down().at(t.s2).length(0.5)
+            
+            
+            
+    def gamma_model(data):
+        with schemdraw.Drawing(show=False) as d:
+            t = elm.xform.Transformer().label(f'{1} : {data["N"]}', fontsize=10)
+            
+            p1 = elm.Line().up().at(t.p1).length(0.5)
+            p2 = elm.Line().down().at(t.p2).length(0.5)
+            s1 = elm.Line().up().at(t.s1).length(0.5)
+            s2 = elm.Line().down().at(t.s2).length(0.5)
     try:
         if n == "Raw Data":
             data = {
-                'L1': instrument.L1,
-                'L2': instrument.L2,
-                'k1': instrument.k1,
-                'v1': instrument.v1,
-                'v2': instrument.v2,
+                'L1': instrument.channels[st.session_state['history']].L1,
+                'L2': instrument.channels[st.session_state['history']].L2,
+                'k': instrument.channels[st.session_state['history']].k,
+                'k1': instrument.channels[st.session_state['history']].k1,
+                'k2': instrument.channels[st.session_state['history']].k2,
+                'v1': instrument.channels[st.session_state['history']].v1,
+                'v2': instrument.channels[st.session_state['history']].v2,
             }
+            st.table(data)
         elif n == "T-Model":
             data = {
-                'Ls1_prim': instrument.Ls1_prim,
-                'Lm': instrument.Lm,
-                'Ls2_prim': instrument.Ls2_prim,
+                'Ls1_prim': instrument.channels[st.session_state['history']].Ls1_prim,
+                'Lm': instrument.channels[st.session_state['history']].Lm,
+                'Ls2_prim': instrument.channels[st.session_state['history']].Ls2_prim,
+                'nPrim': int(instrument.channels[st.session_state['history']].nPrim),
+                'nSec': int(instrument.channels[st.session_state['history']].nSec),
             }
+            t_model(data)
         elif n == "Gamma-Model":
             data = {
-                'Ls': instrument.Ls,
-                'Lp': instrument.Lp,
-                'k': instrument.k,
-                'k1': instrument.k1,
-                'k2': instrument.k2,
-                'N': instrument.N,
+                'Ls': instrument.channels[st.session_state['history']].Ls,
+                'Lp': instrument.channels[st.session_state['history']].Lp,
+                'N': instrument.channels[st.session_state['history']].N,
             }
+            gamma_model(data)
         else:
             data = {}
     except Exception as e:
         print(e)
         data = {}
 
-    st.table(data)
 elif __name__ == "__main__":
     import subprocess
     import os
