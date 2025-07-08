@@ -14,6 +14,13 @@ except ImportError:
     print("lgpio module not found. Please install it to use GPIO functionality.")
     lgpio = None
 
+def float_attempt(value):
+    """Convert a value to float if possible, otherwise return as string."""
+    try:
+        return float(value)
+    except ValueError:
+        return value
+
 class Measurements:
     """Class to hold the measurements of a transformer coupling measurement."""
     def __init__(self):
@@ -41,11 +48,17 @@ class Measurements:
         
     def set(self, string):
         """Set the measurements from a string representation."""
-        self.freq, self.voltLvl, self.k, self.k1, self.k2, self.Ls1_prim, self.Lm, self.Ls2_prim, self.Ls, self.Lp, self.N, self.nPrim, self.nSec, self.v1, self.v2, self.L1, self.L2 = [float(i) for i in string.split(' ')]
+        self.freq, self.voltLvl, self.k, self.k1, self.k2, self.Ls1_prim, self.Lm, self.Ls2_prim, self.Ls, self.Lp, self.N, self.nPrim, self.nSec, self.v1, self.v2, self.L1, self.L2 = [float_attempt(i) for i in string.split(' ')]
     
     def measure(self):
         """Perform the measurement and update the attributes."""
         self.L1, self.L2, self.v1, self.v2, self.k, self.k1, self.k2, self.Ls1_prim, self.Lm, self.Ls2_prim, self.Ls, self.Lp, self.N = measure(self.freq, self.voltLvl)
+
+    def __copy__(self):
+        """Create a copy of the measurements."""
+        new_measurements = Measurements()
+        new_measurements.set(str(self))
+        return new_measurements
 
 nPrim, nSec, n, coupMeas_DMM1, coupMeas_DMM2, coupMeas_LCR, chip = '', '', '', '', '', '', ''
 
@@ -67,6 +80,12 @@ def init():
     coupMeas_DMM2.resetError()
     
     chip = lgpio.gpiochip_open(4)
+    
+def cleanup():
+    """Cleanup the GPIO and instruments."""
+    global chip
+    lgpio.gpiochip_close(chip)
+    chip = None
 
 def initCouplingMeasurement(freq=20e3, voltLvl=3):
     # init LCR meter
@@ -241,8 +260,13 @@ def measure(freq=20e3, voltLvl=3, Prim=30, Sec=2):
     init()
     global nPrim, nSec
     nPrim, nSec = Prim, Sec
-    initCouplingMeasurement(freq, voltLvl)
-    return startMeasurement()
+    try:
+        initCouplingMeasurement(freq, voltLvl)
+        measurements = startMeasurement()
+    except:
+        pass
+    cleanup()
+    return measurements
 
 if __name__ == '__main__':
     measure()
