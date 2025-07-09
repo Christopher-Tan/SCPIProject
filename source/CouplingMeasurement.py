@@ -8,6 +8,12 @@ import matplotlib.pyplot as plt
 import time
 import numpy as np
 
+import yaml
+import os
+
+with open(os.path.join(os.path.dirname(__file__), "config.yaml"), 'r') as file:
+    config = yaml.safe_load(file)
+
 try:
     import lgpio
 except ImportError:
@@ -24,8 +30,8 @@ def float_attempt(value):
 class Measurements:
     """Class to hold the measurements of a transformer coupling measurement."""
     def __init__(self):
-        self.freq = 20e3
-        self.voltLvl = 3
+        self.freq = config['properties']['freq']['default']
+        self.voltLvl = config['properties']['voltLvl']['default']
         self.k = ''
         self.k1 = ''
         self.k2 = ''
@@ -35,8 +41,8 @@ class Measurements:
         self.Ls = ''
         self.Lp = ''
         self.N = ''
-        self.nPrim = 30
-        self.nSec = 2
+        self.nPrim = config['properties']['nPrim']['default']
+        self.nSec = config['properties']['nSec']['default']
         self.v1 = ''
         self.v2 = ''
         self.L1 = ''

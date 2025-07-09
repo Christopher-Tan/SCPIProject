@@ -10,6 +10,12 @@ from CouplingMeasurement import Measurements
 from SCPIParser import SCPIParser
 from copy import copy
 
+import os
+import yaml
+with open(os.path.join(os.path.dirname(__file__), "config.yaml"), 'r') as file:
+    config = yaml.safe_load(file)
+
+
 if __name__ == "__main__":
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(("0.0.0.0", 50024))
@@ -48,10 +54,10 @@ if __name__ == "__main__":
                     ":MEASure:HISTory:COUPling?": lambda measurement=-1: measurements[measurement],
                     
                     ":MEASure[:COUPling]": measure,
-                    ":MEASure:COUPling:FREQuency": lambda freq: setattr(new_measurement, 'freq', float(freq)),
-                    ":MEASure:COUPling:VOLTage": lambda volt: setattr(new_measurement, 'voltLvl', float(volt)),
-                    ":MEASure:COUPling:NPRIMary": lambda nPrim: setattr(new_measurement, 'nPrim', int(nPrim)),
-                    ":MEASure:COUPling:NSECondary": lambda nSec: setattr(new_measurement, 'nSec', int(nSec)),
+                    ":MEASure:COUPling:FREQuency": lambda freq: setattr(new_measurement, 'freq', float(freq)) if (config['properties']['freq']['min'] is None or float(freq) >= config['properties']['freq']['min']) and (config['properties']['freq']['max'] is None or float(freq) <= config['properties']['freq']['max']) else None,
+                    ":MEASure:COUPling:VOLTage": lambda volt: setattr(new_measurement, 'voltLvl', float(volt)) if (config['properties']['voltLvl']['min'] is None or float(volt) >= config['properties']['voltLvl']['min']) and (config['properties']['voltLvl']['max'] is None or float(volt) <= config['properties']['voltLvl']['max']) else None,
+                    ":MEASure:COUPling:NPRIMary": lambda nPrim: setattr(new_measurement, 'nPrim', int(nPrim)) if (config['properties']['nPrim']['min'] is None or int(nPrim) >= config['properties']['nPrim']['min']) and (config['properties']['nPrim']['max'] is None or int(nPrim) <= config['properties']['nPrim']['max']) else None,
+                    ":MEASure:COUPling:NSECondary": lambda nSec: setattr(new_measurement, 'nSec', int(nSec)) if (config['properties']['nSec']['min'] is None or int(nSec) >= config['properties']['nSec']['min']) and (config['properties']['nSec']['max'] is None or int(nSec) <= config['properties']['nSec']['max']) else None,
                     ":MEASure:COUPling:FREQuency?": lambda: new_measurement.freq,
                     ":MEASure:COUPling:VOLTage?": lambda: new_measurement.voltLvl,
                     ":MEASure:COUPling:NPRIMary?": lambda: new_measurement.nPrim,

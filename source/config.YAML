@@ -1,0 +1,50 @@
+ip: RaspberryIES002.ost.ch
+port: 50024
+
+properties:
+  freq:
+    units: Hz
+    default: 20000
+    min: null
+    max: null
+  voltLvl:
+    units: V
+    default: 3
+    min: null
+    max: null
+  nPrim:
+    units: ''
+    default: 30
+    min: null
+    max: null
+  nSec:
+    units: ''
+    default: 2
+    min: null
+    max: null
+  L1:
+    units: H
+  L2:
+    units: H
+  v1:
+    units: V
+  v2:
+    units: V
+  k:
+    units: ''
+  k1:
+    units: ''
+  k2:
+    units: ''
+  Ls1_prim:
+    units: H
+  Lm:
+    units: H
+  Ls2_prim:
+    units: H
+  Ls:
+    units: H
+  Lp:
+    units: H
+  N:
+    units: ''

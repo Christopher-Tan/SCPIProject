@@ -3,10 +3,16 @@
 Attributes:
     instrument (CouplingMeasurer): The instrument wrapper used for communication."""
 
-ip = "PIIES002.ost.ch"
-port = 50024
-
+import yaml
 import sys
+import os
+
+with open(os.path.join(os.path.dirname(__file__), "config.yaml"), 'r') as file:
+    config = yaml.safe_load(file)
+    
+ip = config['ip']
+port = config['port']
+properties = config['properties']
 
 if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     import streamlit as st
@@ -75,10 +81,10 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
 
     def fetch():
         if instrument:
-            st.session_state['voltage'], st.session_state['voltage_units'], st.session_state['voltage_scaling'] = replace_prefix(instrument.voltage, "V")
-            st.session_state['frequency'], st.session_state['frequency_units'], st.session_state['frequency_scaling'] = replace_prefix(instrument.frequency, "Hz")
-            st.session_state['nPrim'], st.session_state['nPrim_units'] = replace_suffix(instrument.nPrim, "Turns")
-            st.session_state['nSec'], st.session_state['nSec_units'] = replace_suffix(instrument.nSec, "Turns")
+            st.session_state['voltage'], st.session_state['voltage_units'], st.session_state['voltage_scaling'] = replace_prefix(instrument.voltage, properties['voltLvl']['units'])
+            st.session_state['frequency'], st.session_state['frequency_units'], st.session_state['frequency_scaling'] = replace_prefix(instrument.frequency, properties['freq']['units'])
+            st.session_state['nPrim'], st.session_state['nPrim_units'] = replace_suffix(instrument.nPrim, properties['nPrim']['units'])
+            st.session_state['nSec'], st.session_state['nSec_units'] = replace_suffix(instrument.nSec, properties['nSec']['units'])
             st.session_state['history'] = int(instrument.n)
             st.session_state['max_history'] = int(instrument.n)
             
@@ -242,40 +248,39 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
 
         if n == "Raw Data":
             data = {
-                'L1': format_with_units(instrument.channels[st.session_state['history']].L1, "H"),
-                'L2': format_with_units(instrument.channels[st.session_state['history']].L2, "H"),
+                'L1': format_with_units(instrument.channels[st.session_state['history']].L1, properties['L1']['units']),
+                'L2': format_with_units(instrument.channels[st.session_state['history']].L2, properties['L2']['units']),
                 'k': instrument.channels[st.session_state['history']].k,
                 'k1': instrument.channels[st.session_state['history']].k1,
                 'k2': instrument.channels[st.session_state['history']].k2,
-                'v1': format_with_units(instrument.channels[st.session_state['history']].v1, "V"),
-                'v2': format_with_units(instrument.channels[st.session_state['history']].v2, "V"),
+                'v1': format_with_units(instrument.channels[st.session_state['history']].v1, properties['v1']['units']),
+                'v2': format_with_units(instrument.channels[st.session_state['history']].v2, properties['v2']['units']),
             }
             st.table(data)
         elif n == "T-Model":
             data = {
-                'Ls1_prim': format_with_units(instrument.channels[st.session_state['history']].Ls1_prim, "H"),
-                'Lm': format_with_units(instrument.channels[st.session_state['history']].Lm, "H"),
-                'Ls2_prim': format_with_units(instrument.channels[st.session_state['history']].Ls2_prim, "H"),
-                'nPrim': format_with_units(int(instrument.channels[st.session_state['history']].nPrim), "Turns", is_turns=True),
-                'nSec': format_with_units(int(instrument.channels[st.session_state['history']].nSec), "Turns", is_turns=True),
+                'Ls1_prim': format_with_units(instrument.channels[st.session_state['history']].Ls1_prim, properties['Ls1_prim']['units']),
+                'Lm': format_with_units(instrument.channels[st.session_state['history']].Lm, properties['Lm']['units']),
+                'Ls2_prim': format_with_units(instrument.channels[st.session_state['history']].Ls2_prim, properties['Ls2_prim']['units']),
+                'nPrim': format_with_units(int(instrument.channels[st.session_state['history']].nPrim), properties['nPrim']['units'], is_turns=True),
+                'nSec': format_with_units(int(instrument.channels[st.session_state['history']].nSec), properties['nSec']['units'], is_turns=True),
             }
             t_model(data)
         elif n == "Gamma-Model":
             data = {
-                'Ls': format_with_units(instrument.channels[st.session_state['history']].Ls, "H"),
-                'Lp': format_with_units(instrument.channels[st.session_state['history']].Lp, "H"),
+                'Ls': format_with_units(instrument.channels[st.session_state['history']].Ls, properties['Ls']['units']),
+                'Lp': format_with_units(instrument.channels[st.session_state['history']].Lp, properties['Lp']['units']),
                 'N': instrument.channels[st.session_state['history']].N,
             }
             gamma_model(data)
-        else:
-            data = {}
     except Exception as e:
         print(e)
-        data = {}
+        
+    if st.session_state['max_history'] > 1:
+        st.slider("Measurement", min_value=1, max_value=st.session_state['max_history'], key="history")
 
 elif __name__ == "__main__":
     import subprocess
-    import os
     
     process = subprocess.Popen(
         ["python", os.path.join(os.path.dirname(__file__), "SCPIClient.py")],
