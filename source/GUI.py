@@ -190,48 +190,80 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         
     def t_model(data):
         with schemdraw.Drawing(show=False) as d:
-            t = elm.xform.Transformer().label(f'{data["nPrim"]} : {data["nSec"]}', fontsize=10) perfect
+            t = elm.xform.Transformer().label(f'{data["nPrim"]} : {data["nSec"]}', fontsize=10)
             
             p1 = elm.Line().up().at(t.p1).length(0.5)
             p2 = elm.Line().down().at(t.p2).length(0.5)
             s1 = elm.Line().up().at(t.s1).length(0.5)
             s2 = elm.Line().down().at(t.s2).length(0.5)
+
+            l2 = elm.Inductor2().left().at(p1.end).flip().label(data['Ls2_prim'], fontsize=10)
+            l1 = elm.Inductor2().left().at(l2.end).flip().label(data['Ls1_prim'], fontsize=10)
+
+            w2 = elm.Line().left().at(p2.end)
+            w1 = elm.Line().left().at(w2.end)
             
+            lm = elm.Inductor2().down().at(l2.end).to(w2.end).flip().label(data['Lm'], fontsize=10)
             
+            elm.Line().right().at(s1.end).length(2)
+            elm.Line().right().at(s2.end).length(2)
+            
+        render(d)
             
     def gamma_model(data):
         with schemdraw.Drawing(show=False) as d:
-            t = elm.xform.Transformer().label(f'{1} : {data["N"]}', fontsize=10)
+            t = elm.xform.Transformer().label(f'{1} : {data["N"]:.4f}', fontsize=10)
             
             p1 = elm.Line().up().at(t.p1).length(0.5)
             p2 = elm.Line().down().at(t.p2).length(0.5)
             s1 = elm.Line().up().at(t.s1).length(0.5)
             s2 = elm.Line().down().at(t.s2).length(0.5)
+            
+            w3 = elm.Line().left().at(p1.end).length(2)
+            ls = elm.Inductor2().left().at(w3.end).flip().label(data['Ls'], fontsize=10)
+
+            w2 = elm.Line().left().at(p2.end).length(2)
+            w1 = elm.Line().left().at(w2.end)
+            
+            lp = elm.Inductor2().down().at(w3.end).to(w2.end).flip().label(data['Lp'], fontsize=10)
+            
+            elm.Line().right().at(s1.end).length(2)
+            elm.Line().right().at(s2.end).length(2)
+
+        render(d)
+        
     try:
+        def format_with_units(value, units, is_turns=False):
+            if is_turns:
+                value, units = replace_suffix(value, units)
+            else:
+                value, units, _ = replace_prefix(value, units)
+            return f"{value:.3f} {units}"
+
         if n == "Raw Data":
             data = {
-                'L1': instrument.channels[st.session_state['history']].L1,
-                'L2': instrument.channels[st.session_state['history']].L2,
+                'L1': format_with_units(instrument.channels[st.session_state['history']].L1, "H"),
+                'L2': format_with_units(instrument.channels[st.session_state['history']].L2, "H"),
                 'k': instrument.channels[st.session_state['history']].k,
                 'k1': instrument.channels[st.session_state['history']].k1,
                 'k2': instrument.channels[st.session_state['history']].k2,
-                'v1': instrument.channels[st.session_state['history']].v1,
-                'v2': instrument.channels[st.session_state['history']].v2,
+                'v1': format_with_units(instrument.channels[st.session_state['history']].v1, "V"),
+                'v2': format_with_units(instrument.channels[st.session_state['history']].v2, "V"),
             }
             st.table(data)
         elif n == "T-Model":
             data = {
-                'Ls1_prim': instrument.channels[st.session_state['history']].Ls1_prim,
-                'Lm': instrument.channels[st.session_state['history']].Lm,
-                'Ls2_prim': instrument.channels[st.session_state['history']].Ls2_prim,
-                'nPrim': int(instrument.channels[st.session_state['history']].nPrim),
-                'nSec': int(instrument.channels[st.session_state['history']].nSec),
+                'Ls1_prim': format_with_units(instrument.channels[st.session_state['history']].Ls1_prim, "H"),
+                'Lm': format_with_units(instrument.channels[st.session_state['history']].Lm, "H"),
+                'Ls2_prim': format_with_units(instrument.channels[st.session_state['history']].Ls2_prim, "H"),
+                'nPrim': format_with_units(int(instrument.channels[st.session_state['history']].nPrim), "Turns", is_turns=True),
+                'nSec': format_with_units(int(instrument.channels[st.session_state['history']].nSec), "Turns", is_turns=True),
             }
             t_model(data)
         elif n == "Gamma-Model":
             data = {
-                'Ls': instrument.channels[st.session_state['history']].Ls,
-                'Lp': instrument.channels[st.session_state['history']].Lp,
+                'Ls': format_with_units(instrument.channels[st.session_state['history']].Ls, "H"),
+                'Lp': format_with_units(instrument.channels[st.session_state['history']].Lp, "H"),
                 'N': instrument.channels[st.session_state['history']].N,
             }
             gamma_model(data)
