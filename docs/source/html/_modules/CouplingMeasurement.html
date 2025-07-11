@@ -42,17 +42,30 @@
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;config.yaml&quot;</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">lgpio</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;lgpio module not found. Please install it to use GPIO functionality.&quot;</span><span class="p">)</span>
     <span class="n">lgpio</span> <span class="o">=</span> <span class="kc">None</span>
 
+<div class="viewcode-block" id="float_attempt"><a class="viewcode-back" href="../CouplingMeasurement.html#CouplingMeasurement.float_attempt">[docs]</a><span class="k">def</span> <span class="nf">float_attempt</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a value to float if possible, otherwise return as string.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+
 <div class="viewcode-block" id="Measurements"><a class="viewcode-back" href="../CouplingMeasurement.html#CouplingMeasurement.Measurements">[docs]</a><span class="k">class</span> <span class="nc">Measurements</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class to hold the measurements of a transformer coupling measurement.&quot;&quot;&quot;</span>
 <div class="viewcode-block" id="Measurements.__init__"><a class="viewcode-back" href="../CouplingMeasurement.html#CouplingMeasurement.Measurements.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">=</span> <span class="mf">20e3</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">voltLvl</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;freq&#39;</span><span class="p">][</span><span class="s1">&#39;default&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">voltLvl</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;voltLvl&#39;</span><span class="p">][</span><span class="s1">&#39;default&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">k1</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">k2</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
@@ -62,8 +75,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">Ls</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Lp</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nPrim</span> <span class="o">=</span> <span class="mi">30</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nSec</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nPrim</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;nPrim&#39;</span><span class="p">][</span><span class="s1">&#39;default&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nSec</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;nSec&#39;</span><span class="p">][</span><span class="s1">&#39;default&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">v1</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">v2</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">L1</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
@@ -75,11 +88,17 @@
         
 <div class="viewcode-block" id="Measurements.set"><a class="viewcode-back" href="../CouplingMeasurement.html#CouplingMeasurement.Measurements.set">[docs]</a>    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the measurements from a string representation.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltLvl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ls1_prim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ls2_prim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ls</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nPrim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nSec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">L1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">L2</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)]</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltLvl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ls1_prim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ls2_prim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ls</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nPrim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nSec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">L1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">L2</span> <span class="o">=</span> <span class="p">[</span><span class="n">float_attempt</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)]</span></div>
     
 <div class="viewcode-block" id="Measurements.measure"><a class="viewcode-back" href="../CouplingMeasurement.html#CouplingMeasurement.Measurements.measure">[docs]</a>    <span class="k">def</span> <span class="nf">measure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform the measurement and update the attributes.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">L1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">L2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ls1_prim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ls2_prim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ls</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="n">measure</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">freq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltLvl</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">L1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">L2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ls1_prim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ls2_prim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ls</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="n">measure</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">freq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltLvl</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a copy of the measurements.&quot;&quot;&quot;</span>
+        <span class="n">new_measurements</span> <span class="o">=</span> <span class="n">Measurements</span><span class="p">()</span>
+        <span class="n">new_measurements</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">new_measurements</span></div>
 
 <span class="n">nPrim</span><span class="p">,</span> <span class="n">nSec</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">coupMeas_DMM1</span><span class="p">,</span> <span class="n">coupMeas_DMM2</span><span class="p">,</span> <span class="n">coupMeas_LCR</span><span class="p">,</span> <span class="n">chip</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
 
@@ -101,6 +120,12 @@
     <span class="n">coupMeas_DMM2</span><span class="o">.</span><span class="n">resetError</span><span class="p">()</span>
     
     <span class="n">chip</span> <span class="o">=</span> <span class="n">lgpio</span><span class="o">.</span><span class="n">gpiochip_open</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="cleanup"><a class="viewcode-back" href="../CouplingMeasurement.html#CouplingMeasurement.cleanup">[docs]</a><span class="k">def</span> <span class="nf">cleanup</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cleanup the GPIO and instruments.&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">chip</span>
+    <span class="n">lgpio</span><span class="o">.</span><span class="n">gpiochip_close</span><span class="p">(</span><span class="n">chip</span><span class="p">)</span>
+    <span class="n">chip</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 <span class="k">def</span> <span class="nf">initCouplingMeasurement</span><span class="p">(</span><span class="n">freq</span><span class="o">=</span><span class="mf">20e3</span><span class="p">,</span> <span class="n">voltLvl</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
     <span class="c1"># init LCR meter</span>
@@ -275,8 +300,13 @@
     <span class="n">init</span><span class="p">()</span>
     <span class="k">global</span> <span class="n">nPrim</span><span class="p">,</span> <span class="n">nSec</span>
     <span class="n">nPrim</span><span class="p">,</span> <span class="n">nSec</span> <span class="o">=</span> <span class="n">Prim</span><span class="p">,</span> <span class="n">Sec</span>
-    <span class="n">initCouplingMeasurement</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">voltLvl</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">startMeasurement</span><span class="p">()</span></div>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">initCouplingMeasurement</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">voltLvl</span><span class="p">)</span>
+        <span class="n">measurements</span> <span class="o">=</span> <span class="n">startMeasurement</span><span class="p">()</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="n">cleanup</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">measurements</span></div>
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="n">measure</span><span class="p">()</span>
@@ -303,6 +333,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../SCPIClient.html">SCPIClient.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../SCPIServer.html">SCPIServer.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../SCPIParser.html">SCPIParser.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../CouplingMeasurer.html">CouplingMeasurer.py</a></li>
 </ul>
 
 <div class="relations">

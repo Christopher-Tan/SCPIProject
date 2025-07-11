@@ -21,6 +21,28 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     
     from math import log10, floor, isclose
     
+    if not config['developerMode']:
+        st.markdown("""
+            <style>
+                .stAppHeader {
+                    display: none;
+                }
+            </style>
+        """, unsafe_allow_html=True)
+        
+    st.markdown("""
+        <style>
+            h1 {
+                padding: 0px !important;
+            }
+            .block-container {
+                padding-top: 0.4rem;
+                padding-bottom: 1rem;
+                padding-left: 4rem;
+                padding-right: 4rem;
+            }
+        </style>
+    """, unsafe_allow_html=True)
     metric_prefixes = {
         'y': 1e-24, 
         'z': 1e-21,
@@ -55,7 +77,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
                     scaling_factor /= factor
                     break
         
-        base_units = 10 ** (3 * floor(log10(value) + 1e-9) / 3)
+        base_units = 10 ** (3 * floor((log10(abs(value)) + 1e-9) / 3))
         value /= base_units
         scaling_factor *= base_units
         for prefix, factor in prefixes:
@@ -69,7 +91,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             if suffix and units.endswith(suffix):
                 units = units[:-len(suffix)]
         
-        if value >= 1 + 1e-9:
+        if not isclose(value, 1):
             units += suffix
         return value, units
     
@@ -94,16 +116,15 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             instrument = CouplingMeasurer(f"TCPIP::{ip}::{port}::SOCKET", read_termination="\n", write_termination="\n", timeout=10000)
             st.session_state['instrument'] = instrument
             fetch()
-            st.success(f"Connected to {instrument.id}.")
+            #st.success(f"Connected to {instrument.id}.")
         except Exception as e:
             instrument = None
-            st.error(f"Failed to connect to the instrument at {ip}:{port}. Please check the connection and try again.")
+            #st.error(f"Failed to connect to the instrument at {ip}:{port}. Please check the connection and try again.")
     else:
         instrument = st.session_state['instrument']
 
-    g = grid([2, 8, 3, 3], [1, 1, 1, 1, 1, 1, 1, 1], vertical_align='center')
+    g = grid([6, 1.8, 1.8], vertical_align='center')
 
-    g.empty()
     g.title("Coupling Measurements")
     if g.button("Measure", args=(), key="measure_button"):
         try:
@@ -112,7 +133,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         except Exception as e:
             print(e)
             st.session_state.pop('instrument', None)
-            st.error(f"Failed to connect to and perform a measurement on the instrument")
+            #st.error(f"Failed to connect to and perform a measurement on the instrument")
 
     if g.button("Reset", args=(), key="reset_button"):
         try:
@@ -121,7 +142,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         except Exception as e:
             print(e)
             st.session_state.pop('instrument', None)
-            st.error(f"Failed to connect to and reset the instrument")
+            #st.error(f"Failed to connect to and reset the instrument")
             
     if "refresh_before" not in st.session_state:
         st.session_state["refresh_before"] = False
@@ -133,14 +154,16 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     if st.session_state["refresh_before"]:
         st.session_state["refresh_before"] = False
         fetch()
+        
+    g = grid([0.86, 0.6, 0.86, 0.6, 0.86, 0.6, 0.86, 0.6], vertical_align='bottom')
     try:
-        instrument.voltage = g.number_input("Voltage", key="voltage", format="%0.3f", on_change=refresh, step=1.0/st.session_state['voltage_scaling']) * st.session_state['voltage_scaling']
+        instrument.voltage = g.number_input("Voltage", key="voltage", format="%0.3f", on_change=refresh, step=1.0/st.session_state['voltage_scaling'], min_value=properties['voltLvl']['min'], max_value=properties['voltLvl']['max']) * st.session_state['voltage_scaling']
         g.write(st.session_state['voltage_units'])
-        instrument.frequency = g.number_input("Frequency", key="frequency", format="%0.3f", on_change=refresh, step=1.0/st.session_state['frequency_scaling']) * st.session_state['frequency_scaling']
+        instrument.frequency = g.number_input("Frequency", key="frequency", format="%0.3f", on_change=refresh, step=1.0/st.session_state['frequency_scaling'], min_value=properties['freq']['min'], max_value=properties['freq']['max']) * st.session_state['frequency_scaling']
         g.write(st.session_state['frequency_units'])
-        instrument.nPrim = g.number_input("nPrim", key="nPrim", on_change=refresh, step=1)
+        instrument.nPrim = g.number_input("nPrim", key="nPrim", on_change=refresh, step=1, min_value=properties['nPrim']['min'], max_value=properties['nPrim']['max'])
         g.write(st.session_state['nPrim_units'])
-        instrument.nSec = g.number_input("nSec", key="nSec", on_change=refresh, step=1)
+        instrument.nSec = g.number_input("nSec", key="nSec", on_change=refresh, step=1, min_value=properties['nSec']['min'], max_value=properties['nSec']['max'])
         g.write(st.session_state['nSec_units'])
         
         if st.session_state["refresh_after"]:
@@ -150,9 +173,12 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     except Exception as e:
         print(e)
         st.session_state.pop('instrument', None)
-        st.error(f"Failed to connect to and set the instrument parameters")
+        #st.error(f"Failed to connect to and set the instrument parameters")
+        
+    if "n" not in st.session_state:
+        st.session_state["n"] = None
 
-    n = st_navbar(["Raw Data", "T-Model", "Gamma-Model"], adjust=False, styles={
+    n = st_navbar(["Raw Data", "T-Model", "Gamma-Model"], selected=None, adjust=False, styles={
             'nav': {
                 'background-color': 'rgba(0, 0, 0, 0)',
                 'margin': '0px',
@@ -181,6 +207,11 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         }
     )
     
+    if n:
+        st.session_state["n"] = n
+
+    n = st.session_state["n"]
+    
     import schemdraw
     import schemdraw.elements as elm
     
@@ -191,8 +222,8 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         diagram.save(buf, dpi=200)
         buf.seek(0)
         
-        _, i, _ = st.columns([1, 2, 1], vertical_alignment='center')
-        i.image(buf, use_column_width=True)
+        _, i, _ = st.columns([1, 2.4, 1], vertical_alignment='center')
+        i.image(buf, use_container_width=True)
         
     def t_model(data):
         with schemdraw.Drawing(show=False) as d:
@@ -239,20 +270,19 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         render(d)
         
     try:
-        def format_with_units(value, units, is_turns=False):
-            if is_turns:
-                value, units = replace_suffix(value, units)
-            else:
-                value, units, _ = replace_prefix(value, units)
+        def format_with_units(value, units):
+            value, units, _ = replace_prefix(value, units)
             return f"{value:.3f} {units}"
 
         if n == "Raw Data":
             data = {
+                'voltage': format_with_units(instrument.channels[st.session_state['history']].voltage, properties['voltLvl']['units']),
+                'frequency': format_with_units(instrument.channels[st.session_state['history']].frequency, properties['freq']['units']),
                 'L1': format_with_units(instrument.channels[st.session_state['history']].L1, properties['L1']['units']),
                 'L2': format_with_units(instrument.channels[st.session_state['history']].L2, properties['L2']['units']),
-                'k': instrument.channels[st.session_state['history']].k,
-                'k1': instrument.channels[st.session_state['history']].k1,
-                'k2': instrument.channels[st.session_state['history']].k2,
+                'k': f"{instrument.channels[st.session_state['history']].k:.3f}",
+                'k1': f"{instrument.channels[st.session_state['history']].k1:.3f}",
+                'k2': f"{instrument.channels[st.session_state['history']].k2:.3f}",
                 'v1': format_with_units(instrument.channels[st.session_state['history']].v1, properties['v1']['units']),
                 'v2': format_with_units(instrument.channels[st.session_state['history']].v2, properties['v2']['units']),
             }
@@ -262,8 +292,8 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
                 'Ls1_prim': format_with_units(instrument.channels[st.session_state['history']].Ls1_prim, properties['Ls1_prim']['units']),
                 'Lm': format_with_units(instrument.channels[st.session_state['history']].Lm, properties['Lm']['units']),
                 'Ls2_prim': format_with_units(instrument.channels[st.session_state['history']].Ls2_prim, properties['Ls2_prim']['units']),
-                'nPrim': format_with_units(int(instrument.channels[st.session_state['history']].nPrim), properties['nPrim']['units'], is_turns=True),
-                'nSec': format_with_units(int(instrument.channels[st.session_state['history']].nSec), properties['nSec']['units'], is_turns=True),
+                'nPrim': int(instrument.channels[st.session_state['history']].nPrim),
+                'nSec': int(instrument.channels[st.session_state['history']].nSec),
             }
             t_model(data)
         elif n == "Gamma-Model":

@@ -32,7 +32,103 @@
           <div class="body" role="main">
             
   <h1>Source code for OST.CouplingMeasurer</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">pymeasure.instruments</span> <span class="kn">import</span> <span class="n">Instrument</span>
+<span></span><span class="kn">from</span> <span class="nn">pymeasure.instruments</span> <span class="kn">import</span> <span class="n">Instrument</span><span class="p">,</span> <span class="n">Channel</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">from</span> <span class="nn">pymeasure.instruments.validators</span> <span class="kn">import</span> <span class="n">strict_range</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;config.yaml&quot;</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CouplingMeasurement"><a class="viewcode-back" href="../../CouplingMeasurer.html#OST.CouplingMeasurer.CouplingMeasurement">[docs]</a><span class="k">class</span> <span class="nc">CouplingMeasurement</span><span class="p">(</span><span class="n">Channel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to represent a single coupling measurement.</span>
+<span class="sd">    This class holds the properties of a coupling measurement, such as frequency, voltage, and various coupling parameters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">frequency</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+        <span class="s2">&quot;MEASure:HISTory:COUPling:FREQ? </span><span class="si">{ch}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A floating point property that returns the frequency of the measurement.&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    
+    <span class="n">voltage</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+        <span class="s2">&quot;MEASure:HISTory:COUPling:VOLT? </span><span class="si">{ch}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A floating point property that returns the voltage level of the measurement.&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+        
+    <span class="n">k</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+        <span class="s2">&quot;MEASure:HISTory:COUPling:K? </span><span class="si">{ch}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the coupling coefficient K.&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+    
+    <span class="n">k1</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+        <span class="s2">&quot;MEASure:HISTory:COUPling:K1? </span><span class="si">{ch}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the primary coupling coefficient K1.&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+    
+    <span class="n">k2</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+        <span class="s2">&quot;MEASure:HISTory:COUPling:K2? </span><span class="si">{ch}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the secondary coupling coefficient K2.&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+    
+    <span class="n">Ls1_prim</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+        <span class="s2">&quot;MEASure:HISTory:COUPling:LS1Prim? </span><span class="si">{ch}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the primary inductance of the first winding Ls1_prim.&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+    
+    <span class="n">Lm</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+        <span class="s2">&quot;MEASure:HISTory:COUPling:LM? </span><span class="si">{ch}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the mutual inductance Lm.&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+    
+    <span class="n">Ls2_prim</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+        <span class="s2">&quot;MEASure:HISTory:COUPling:LS2Prim? </span><span class="si">{ch}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the primary inductance of the second winding Ls2_prim.&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+    
+    <span class="n">Ls</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+        <span class="s2">&quot;MEASure:HISTory:COUPling:LS? </span><span class="si">{ch}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the self-inductance Ls.&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+    
+    <span class="n">Lp</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+        <span class="s2">&quot;MEASure:HISTory:COUPling:LP? </span><span class="si">{ch}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the primary inductance Lp.&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+    
+    <span class="n">N</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+        <span class="s2">&quot;MEASure:HISTory:COUPling:N? </span><span class="si">{ch}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the turns ratio N.&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+    
+    <span class="n">v1</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+        <span class="s2">&quot;MEASure:HISTory:COUPling:V1? </span><span class="si">{ch}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the voltage V1.&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+    
+    <span class="n">v2</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+        <span class="s2">&quot;MEASure:HISTory:COUPling:V2? </span><span class="si">{ch}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the voltage V2.&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+    
+    <span class="n">nPrim</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+        <span class="s2">&quot;MEASure:HISTory:COUPling:NPRIMary? </span><span class="si">{ch}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the number of primary turns.&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+    
+    <span class="n">nSec</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+        <span class="s2">&quot;MEASure:HISTory:COUPling:NSECondary? </span><span class="si">{ch}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the number of secondary turns.&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+    
+    <span class="n">L1</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+        <span class="s2">&quot;MEASure:HISTory:COUPling:L1? </span><span class="si">{ch}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the inductance of the primary winding L1.&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+    
+    <span class="n">L2</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+        <span class="s2">&quot;MEASure:HISTory:COUPling:L2? </span><span class="si">{ch}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the inductance of the secondary winding L2.&quot;&quot;&quot;</span>
+    <span class="p">)</span></div>
 
 <div class="viewcode-block" id="CouplingMeasurer"><a class="viewcode-back" href="../../CouplingMeasurer.html#OST.CouplingMeasurer.CouplingMeasurer">[docs]</a><span class="k">class</span> <span class="nc">CouplingMeasurer</span><span class="p">(</span><span class="n">Instrument</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to interface with a coupling measurement instrument.</span>
@@ -51,98 +147,54 @@
             <span class="n">adapter</span><span class="p">,</span>
             <span class="n">name</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
         
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">CouplingMeasurement</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="CouplingMeasurer.reset"><a class="viewcode-back" href="../../CouplingMeasurer.html#OST.CouplingMeasurer.CouplingMeasurer.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the instrument to its default state.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;*RST&quot;</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="CouplingMeasurer.measure"><a class="viewcode-back" href="../../CouplingMeasurer.html#OST.CouplingMeasurer.CouplingMeasurer.measure">[docs]</a>    <span class="k">def</span> <span class="nf">measure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Trigger a measurement.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MEAS&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">CouplingMeasurement</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">))</span></div>
+    
+    <span class="n">n</span> <span class="o">=</span> <span class="n">Instrument</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
+        <span class="s2">&quot;MEASure:HISTory:COUPling:NUMBer?&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the number of measurements taken.&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+    
     <span class="n">frequency</span> <span class="o">=</span> <span class="n">Instrument</span><span class="o">.</span><span class="n">control</span><span class="p">(</span>
-        <span class="s2">&quot;MEASure:COUPling:FREQ?&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;MEASure:COUPling:FREQ </span><span class="si">%g</span><span class="s2">&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A floating point property that controls the frequency of the measurement.&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;MEASure:COUPling:FREQuency?&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;MEASure:COUPling:FREQuency </span><span class="si">%g</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that controls the frequency for the measurement.&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">validator</span><span class="o">=</span><span class="n">strict_range</span><span class="p">,</span>
+        <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;freq&#39;</span><span class="p">][</span><span class="s1">&#39;min&#39;</span><span class="p">],</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;freq&#39;</span><span class="p">][</span><span class="s1">&#39;max&#39;</span><span class="p">]]</span>
     <span class="p">)</span>
     
     <span class="n">voltage</span> <span class="o">=</span> <span class="n">Instrument</span><span class="o">.</span><span class="n">control</span><span class="p">(</span>
-        <span class="s2">&quot;MEASure:COUPling:VOLT?&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;MEASure:COUPling:VOLT </span><span class="si">%g</span><span class="s2">&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A floating point property that controls the voltage level of the measurement.&quot;&quot;&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    
-<div class="viewcode-block" id="CouplingMeasurer.measure"><a class="viewcode-back" href="../../CouplingMeasurer.html#OST.CouplingMeasurer.CouplingMeasurer.measure">[docs]</a>    <span class="k">def</span> <span class="nf">measure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MEAS&quot;</span><span class="p">)</span></div>
-    
-    <span class="n">k</span> <span class="o">=</span> <span class="n">Instrument</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
-        <span class="s2">&quot;MEASure:COUPling:K?&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the coupling coefficient K.&quot;&quot;&quot;</span>
-    <span class="p">)</span>
-    
-    <span class="n">k1</span> <span class="o">=</span> <span class="n">Instrument</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
-        <span class="s2">&quot;MEASure:COUPling:K1?&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the primary coupling coefficient K1.&quot;&quot;&quot;</span>
-    <span class="p">)</span>
-    
-    <span class="n">k2</span> <span class="o">=</span> <span class="n">Instrument</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
-        <span class="s2">&quot;MEASure:COUPling:K2?&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the secondary coupling coefficient K2.&quot;&quot;&quot;</span>
-    <span class="p">)</span>
-    
-    <span class="n">Ls1_prim</span> <span class="o">=</span> <span class="n">Instrument</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
-        <span class="s2">&quot;MEASure:COUPling:LS1Prim?&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the primary inductance of the first winding Ls1_prim.&quot;&quot;&quot;</span>
-    <span class="p">)</span>
-    
-    <span class="n">Lm</span> <span class="o">=</span> <span class="n">Instrument</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
-        <span class="s2">&quot;MEASure:COUPling:LM?&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the mutual inductance Lm.&quot;&quot;&quot;</span>
-    <span class="p">)</span>
-    
-    <span class="n">Ls2_prim</span> <span class="o">=</span> <span class="n">Instrument</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
-        <span class="s2">&quot;MEASure:COUPling:LS2Prim?&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the primary inductance of the second winding Ls2_prim.&quot;&quot;&quot;</span>
-    <span class="p">)</span>
-    
-    <span class="n">Ls</span> <span class="o">=</span> <span class="n">Instrument</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
-        <span class="s2">&quot;MEASure:COUPling:LS?&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the self-inductance Ls.&quot;&quot;&quot;</span>
-    <span class="p">)</span>
-    
-    <span class="n">Lp</span> <span class="o">=</span> <span class="n">Instrument</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
-        <span class="s2">&quot;MEASure:COUPling:LP?&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the primary inductance Lp.&quot;&quot;&quot;</span>
-    <span class="p">)</span>
-    
-    <span class="n">N</span> <span class="o">=</span> <span class="n">Instrument</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
-        <span class="s2">&quot;MEASure:COUPling:N?&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the turns ratio N.&quot;&quot;&quot;</span>
-    <span class="p">)</span>
-    
-    <span class="n">v1</span> <span class="o">=</span> <span class="n">Instrument</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
-        <span class="s2">&quot;MEASure:COUPling:V1?&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the voltage V1.&quot;&quot;&quot;</span>
-    <span class="p">)</span>
-    
-    <span class="n">v2</span> <span class="o">=</span> <span class="n">Instrument</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
-        <span class="s2">&quot;MEASure:COUPling:V2?&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the voltage V2.&quot;&quot;&quot;</span>
+        <span class="s2">&quot;MEASure:COUPling:VOLTage?&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;MEASure:COUPling:VOLTage </span><span class="si">%g</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that controls the voltage level for the measurement.&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">validator</span><span class="o">=</span><span class="n">strict_range</span><span class="p">,</span>
+        <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;voltLvl&#39;</span><span class="p">][</span><span class="s1">&#39;min&#39;</span><span class="p">],</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;voltLvl&#39;</span><span class="p">][</span><span class="s1">&#39;max&#39;</span><span class="p">]]</span>
     <span class="p">)</span>
     
     <span class="n">nPrim</span> <span class="o">=</span> <span class="n">Instrument</span><span class="o">.</span><span class="n">control</span><span class="p">(</span>
         <span class="s2">&quot;MEASure:COUPling:NPRIMary?&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;MEASure:COUPling:NPRIMary </span><span class="si">%g</span><span class="s2">&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;An integer property that controls the number of primary turns.&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;MEASure:COUPling:NPRIMary </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that controls the number of primary turns.&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">validator</span><span class="o">=</span><span class="n">strict_range</span><span class="p">,</span>
+        <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;nPrim&#39;</span><span class="p">][</span><span class="s1">&#39;min&#39;</span><span class="p">],</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;nPrim&#39;</span><span class="p">][</span><span class="s1">&#39;max&#39;</span><span class="p">]]</span>
     <span class="p">)</span>
     
     <span class="n">nSec</span> <span class="o">=</span> <span class="n">Instrument</span><span class="o">.</span><span class="n">control</span><span class="p">(</span>
         <span class="s2">&quot;MEASure:COUPling:NSECondary?&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;MEASure:COUPling:NSECondary </span><span class="si">%g</span><span class="s2">&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;An integer property that controls the number of secondary turns.&quot;&quot;&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    
-    <span class="n">L1</span> <span class="o">=</span> <span class="n">Instrument</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
-        <span class="s2">&quot;MEASure:COUPling:L1?&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the inductance of the primary winding L1.&quot;&quot;&quot;</span>
-    <span class="p">)</span>
-    
-    <span class="n">L2</span> <span class="o">=</span> <span class="n">Instrument</span><span class="o">.</span><span class="n">measurement</span><span class="p">(</span>
-        <span class="s2">&quot;MEASure:COUPling:L2?&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that returns the inductance of the secondary winding L2.&quot;&quot;&quot;</span>
+        <span class="s2">&quot;MEASure:COUPling:NSECondary </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A property that controls the number of secondary turns.&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">validator</span><span class="o">=</span><span class="n">strict_range</span><span class="p">,</span>
+        <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;nSec&#39;</span><span class="p">][</span><span class="s1">&#39;min&#39;</span><span class="p">],</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;nSec&#39;</span><span class="p">][</span><span class="s1">&#39;max&#39;</span><span class="p">]]</span>
     <span class="p">)</span></div>
 </pre></div>
 

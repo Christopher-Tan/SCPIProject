@@ -217,7 +217,9 @@
             <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:])(</span><span class="o">*</span><span class="n">arguments</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">command</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">):</span>
                 <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">output</span><span class="p">))</span>
-        <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">results</span><span class="p">)</span></div></div>
+        <span class="k">if</span> <span class="n">results</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div></div>
 </pre></div>
 
           </div>
@@ -241,6 +243,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../SCPIClient.html">SCPIClient.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../SCPIServer.html">SCPIServer.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../SCPIParser.html">SCPIParser.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../CouplingMeasurer.html">CouplingMeasurer.py</a></li>
 </ul>
 
 <div class="relations">

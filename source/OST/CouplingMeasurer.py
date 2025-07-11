@@ -1,5 +1,11 @@
 from pymeasure.instruments import Instrument, Channel
 
+import os
+import yaml
+from pymeasure.instruments.validators import strict_range
+with open(os.path.join(os.path.dirname(__file__), "..", "config.yaml"), 'r') as file:
+    config = yaml.safe_load(file)
+
 class CouplingMeasurement(Channel):
     """A class to represent a single coupling measurement.
     This class holds the properties of a coupling measurement, such as frequency, voltage, and various coupling parameters.
@@ -112,9 +118,11 @@ class CouplingMeasurer(Instrument):
         self.add_child(CouplingMeasurement, 0)
     
     def reset(self):
+        """Reset the instrument to its default state."""
         self.write("*RST")
     
     def measure(self):
+        """Trigger a measurement."""
         self.write("MEAS")
         self.add_child(CouplingMeasurement, int(self.n))
     
@@ -123,28 +131,34 @@ class CouplingMeasurer(Instrument):
         """A property that returns the number of measurements taken."""
     )
     
-    channels = Instrument.MultiChannelCreator(CouplingMeasurement, list(range(1, n)))
-
     frequency = Instrument.control(
         "MEASure:COUPling:FREQuency?",
         "MEASure:COUPling:FREQuency %g",
-        """A property that controls the frequency for the measurement."""
+        """A property that controls the frequency for the measurement.""",
+        validator=strict_range,
+        values=[config['properties']['freq']['min'], config['properties']['freq']['max']]
     )
     
     voltage = Instrument.control(
         "MEASure:COUPling:VOLTage?",
         "MEASure:COUPling:VOLTage %g",
-        """A property that controls the voltage level for the measurement."""
+        """A property that controls the voltage level for the measurement.""",
+        validator=strict_range,
+        values=[config['properties']['voltLvl']['min'], config['properties']['voltLvl']['max']]
     )
     
     nPrim = Instrument.control(
         "MEASure:COUPling:NPRIMary?",
         "MEASure:COUPling:NPRIMary %d",
-        """A property that controls the number of primary turns."""
+        """A property that controls the number of primary turns.""",
+        validator=strict_range,
+        values=[config['properties']['nPrim']['min'], config['properties']['nPrim']['max']]
     )
     
     nSec = Instrument.control(
         "MEASure:COUPling:NSECondary?",
         "MEASure:COUPling:NSECondary %d",
-        """A property that controls the number of secondary turns."""
+        """A property that controls the number of secondary turns.""",
+        validator=strict_range,
+        values=[config['properties']['nSec']['min'], config['properties']['nSec']['max']]
     )

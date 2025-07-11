@@ -1,27 +1,30 @@
 ip: RaspberryIES002.ost.ch
 port: 50024
 
+windowMode: true
+developerMode: false
+
 properties:
   freq:
     units: Hz
     default: 20000
-    min: null
-    max: null
+    min: 1000
+    max: 100000
   voltLvl:
     units: V
     default: 3
-    min: null
-    max: null
+    min: 0.001
+    max: 2
   nPrim:
-    units: ''
+    units: 'turns'
     default: 30
-    min: null
-    max: null
+    min: 1
+    max: 1000
   nSec:
-    units: ''
+    units: 'turns'
     default: 2
-    min: null
-    max: null
+    min: 1
+    max: 1000
   L1:
     units: H
   L2:
