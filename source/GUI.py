@@ -51,7 +51,38 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         heartbeat(get_script_run_ctx().session_id)
         st.session_state["heartbeat"] = True
         
+    def fetch_server_errors():
+        try:
+            return instrument.check_errors()
+        except:
+            pass
+        return []
+
+    def check_server_errors(): # sometimes the client side has no errors we still need to check
+        errors = fetch_server_errors()
+        if errors:
+            error(f"Server side error: {'\n'.join(errors)}", replace_instrument=False)
+    
+    @st.dialog("Error")
+    def error(message, replace_instrument=True): # sometimes the client side error is a direct result of the server side error, we show these errors first
+        errors = fetch_server_errors()
+        if errors:
+            st.write(f"Server side error: {'\n'.join(errors)}")
+
+        if replace_instrument:
+            cleanup()
+            st.session_state.pop('instrument', None)
+            
+        st.write(message)
+        
+        if st.button("Retry"):
+            st.session_state["refresh_after"] = True
+            st.rerun()
+        
+        st.stop()
+        
     if not config['developerMode']:
+        fetch_server_errors()
         st.markdown("""
             <style>
                 .stAppHeader {
@@ -150,9 +181,10 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             st.session_state['instrument'] = instrument
             fetch()
             st.toast(f"Connected to {instrument.id}.")
+            check_server_errors()
         except Exception as e:
             instrument = None
-            #st.error(f"Failed to connect to the instrument at {ip}:{port}. Please check the connection and try again.")
+            error(f"Failed to connect to the instrument at {ip}:{port}. Please check the connection and try again.")
     else:
         instrument = st.session_state['instrument']
 
@@ -164,19 +196,21 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             with st.spinner("Waiting for measurement to complete...", show_time=True):
                 instrument.measure()
             fetch()
+            check_server_errors()
         except Exception as e:
             print(e)
             st.session_state.pop('instrument', None)
-            #st.error(f"Failed to connect to and perform a measurement on the instrument")
+            error(f"Failed to connect to and perform a measurement on the instrument")
 
     if g.button("Reset", args=(), key="reset_button"):
         try:
             instrument.reset()
             fetch()
+            check_server_errors()
         except Exception as e:
             print(e)
             st.session_state.pop('instrument', None)
-            #st.error(f"Failed to connect to and reset the instrument")
+            error(f"Failed to connect to and reset the instrument")
             
     if "refresh_before" not in st.session_state:
         st.session_state["refresh_before"] = False
@@ -206,10 +240,11 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             st.session_state["refresh_after"] = False
             st.session_state["refresh_before"] = True
             st.rerun()
+        check_server_errors()
     except Exception as e:
         print(e)
         st.session_state.pop('instrument', None)
-        #st.error(f"Failed to connect to and set the instrument parameters")
+        error(f"Failed to connect to and set the instrument parameters")
         
     if "n" not in st.session_state:
         st.session_state["n"] = "Raw Data"
@@ -347,6 +382,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
                 'N': special_format(instrument.channels[st.session_state['history']].N),
             }
             gamma_model(data)
+        check_server_errors()
     except Exception as e:
         print(e)
         
