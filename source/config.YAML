@@ -12,12 +12,12 @@ properties:
     max: 100000
   voltLvl:
     units: V
-    default: 3
+    default: 2
     min: 0.001
     max: 2
   nPrim:
     units: 'turns'
-    default: 30
+    default: 1
     min: 1
     max: 1000
   nSec:
@@ -29,9 +29,13 @@ properties:
     units: H
   L2:
     units: H
-  v1:
+  v1_prim:
     units: V
-  v2:
+  v2_prim:
+    units: V
+  v1_sec:
+    units: V
+  v2_sec:
     units: V
   k:
     units: ''

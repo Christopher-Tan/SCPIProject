@@ -283,8 +283,10 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
                 'k': f"{instrument.channels[st.session_state['history']].k:.3f}",
                 'k1': f"{instrument.channels[st.session_state['history']].k1:.3f}",
                 'k2': f"{instrument.channels[st.session_state['history']].k2:.3f}",
-                'v1': format_with_units(instrument.channels[st.session_state['history']].v1, properties['v1']['units']),
-                'v2': format_with_units(instrument.channels[st.session_state['history']].v2, properties['v2']['units']),
+                'v1_prim': format_with_units(instrument.channels[st.session_state['history']].v1_prim, properties['v1_prim']['units']),
+                'v2_prim': format_with_units(instrument.channels[st.session_state['history']].v2_prim, properties['v2_prim']['units']),
+                'v1_sec': format_with_units(instrument.channels[st.session_state['history']].v1_sec, properties['v1_sec']['units']),
+                'v2_sec': format_with_units(instrument.channels[st.session_state['history']].v2_sec, properties['v2_sec']['units']),
             }
             st.table(data)
         elif n == "T-Model":

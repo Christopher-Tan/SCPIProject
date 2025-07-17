@@ -66,14 +66,24 @@ class CouplingMeasurement(Channel):
         """A property that returns the turns ratio N."""
     )
     
-    v1 = Channel.measurement(
-        "MEASure:HISTory:COUPling:V1? {ch}",
-        """A property that returns the voltage V1."""
+    v1_prim = Channel.measurement(
+        "MEASure:HISTory:COUPling:v1_prim? {ch}",
+        """A property that returns the primary voltage V1."""
     )
     
-    v2 = Channel.measurement(
-        "MEASure:HISTory:COUPling:V2? {ch}",
-        """A property that returns the voltage V2."""
+    v2_prim = Channel.measurement(
+        "MEASure:HISTory:COUPling:v2_prim? {ch}",
+        """A property that returns the primary voltage V2."""
+    )
+    
+    v1_sec = Channel.measurement(
+        "MEASure:HISTory:COUPling:v1_sec? {ch}",
+        """A property that returns the secondary voltage V1."""
+    )
+    
+    v2_sec = Channel.measurement(
+        "MEASure:HISTory:COUPling:v2_sec? {ch}",
+        """A property that returns the secondary voltage V2."""
     )
     
     nPrim = Channel.measurement(

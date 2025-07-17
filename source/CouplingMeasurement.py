@@ -43,22 +43,24 @@ class Measurements:
         self.N = ''
         self.nPrim = config['properties']['nPrim']['default']
         self.nSec = config['properties']['nSec']['default']
-        self.v1 = ''
-        self.v2 = ''
+        self.v1_prim = ''
+        self.v2_prim = ''
+        self.v1_sec = ''
+        self.v2_sec = ''
         self.L1 = ''
         self.L2 = ''
         
     def __str__(self):
         """Return a string representation of the measurements."""
-        return ' '.join([str(self.freq), str(self.voltLvl), str(self.k), str(self.k1), str(self.k2), str(self.Ls1_prim), str(self.Lm), str(self.Ls2_prim), str(self.Ls), str(self.Lp), str(self.N), str(self.nPrim), str(self.nSec), str(self.v1), str(self.v2), str(self.L1), str(self.L2)])
+        return ' '.join([str(self.freq), str(self.voltLvl), str(self.k), str(self.k1), str(self.k2), str(self.Ls1_prim), str(self.Lm), str(self.Ls2_prim), str(self.Ls), str(self.Lp), str(self.N), str(self.nPrim), str(self.nSec), str(self.v1_prim), str(self.v2_prim), str(self.v1_sec), str(self.v2_sec), str(self.L1), str(self.L2)])
         
     def set(self, string):
         """Set the measurements from a string representation."""
-        self.freq, self.voltLvl, self.k, self.k1, self.k2, self.Ls1_prim, self.Lm, self.Ls2_prim, self.Ls, self.Lp, self.N, self.nPrim, self.nSec, self.v1, self.v2, self.L1, self.L2 = [float_attempt(i) for i in string.split(' ')]
+        self.freq, self.voltLvl, self.k, self.k1, self.k2, self.Ls1_prim, self.Lm, self.Ls2_prim, self.Ls, self.Lp, self.N, self.nPrim, self.nSec, self.v1_prim, self.v2_prim, self.v1_sec, self.v2_sec, self.L1, self.L2 = [float_attempt(i) for i in string.split(' ')]
     
     def measure(self):
         """Perform the measurement and update the attributes."""
-        self.L1, self.L2, self.v1, self.v2, self.k, self.k1, self.k2, self.Ls1_prim, self.Lm, self.Ls2_prim, self.Ls, self.Lp, self.N = measure(self.freq, self.voltLvl)
+        self.L1, self.L2, self.v1_prim, self.v2_prim, self.v1_sec, self.v2_sec, self.k, self.k1, self.k2, self.Ls1_prim, self.Lm, self.Ls2_prim, self.Ls, self.Lp, self.N = measure(self.freq, self.voltLvl, self.nPrim, self.nSec)
 
     def __copy__(self):
         """Create a copy of the measurements."""
@@ -163,13 +165,11 @@ def startMeasurement():
     setVoltage(channels, voltages)
 
     # calculate coupling factor
-    v1 = (v1_1 + v2_2)/2
-    v2 = (v2_1 + v1_2)/2
-    v1 = v1_1
-    v2 = v2_1
-    k1 = v2/v1*nPrim/nSec
-    print(v1)
-    print(v2)
+    v1_prim = (v1_1 + v2_2)/2
+    v2_prim = (v2_1 + v1_2)/2
+    k1 = v2_prim/v1_prim*nPrim/nSec
+    print(v1_prim)
+    print(v2_prim)
     print('k1 = %3.4f' %(k1))
 
 # step 4: perform LCR measurement on secondary side (same as step 1)
@@ -201,11 +201,9 @@ def startMeasurement():
     setVoltage(channels, voltages)
 
     # calculate coupling factor
-    v1 = (v1_1 + v2_2)/2
-    v2 = (v2_1 + v1_2)/2
-    v1 = v1_1
-    v2 = v2_1
-    k2 = v1/v2*nSec/nPrim
+    v1_sec = (v1_1 + v2_2)/2
+    v2_sec = (v2_1 + v1_2)/2
+    k2 = v1_sec/v2_sec*nSec/nPrim
     print('k2 = %3.4f' %(k2))
 
 # calculation Party 
@@ -236,7 +234,7 @@ def startMeasurement():
     print("N = %f" %(N))
     print("1/N = %f" %(1/N))
     
-    return L1, L2, v1, v2, k, k1, k2, Ls1_prim, Lm, Ls2_prim, Ls, Lp, N
+    return L1, L2, v1_prim, v2_prim, v1_sec, v2_sec, k, k1, k2, Ls1_prim, Lm, Ls2_prim, Ls, Lp, N
 
 def measure(freq=20e3, voltLvl=3, Prim=30, Sec=2):
     """Measure the coupling of a transformer with given primary and secondary turns.
