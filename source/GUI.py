@@ -7,9 +7,15 @@ import yaml
 import sys
 import os
 
-with open(os.path.join(os.path.dirname(__file__), "config.yaml"), 'r') as file:
-    config = yaml.safe_load(file)
-    
+import traceback
+
+def read_config():
+    global config
+    with open(os.path.join(os.path.dirname(__file__), "config.yaml"), 'r') as file:
+        config = yaml.safe_load(file)
+
+read_config()
+
 ip = config["server"]['_IP']
 port = config["server"]['port']
 properties = config['properties']
@@ -143,6 +149,8 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     import re
     def nice(text):
         """Converts various cases (camelCase, kebab-case, snake_case, etc.) into Capitalized Case."""
+        if text.startswith("_"):
+            return text[1:]
         
         # Replace kebab-case and snake_case with spaces
         text = re.sub(r'[\-_]', ' ', text)
@@ -163,12 +171,12 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
                 with st.expander(f"**{nice(key)}**", expanded=True):
                     updated_data[key] = nested_dict_to_form(value, parent_key=field_key, separator=separator)
             else:
-                if isinstance(value, int):
+                if isinstance(value, bool):
+                    updated_data[key] = st.checkbox(f"{nice(key)}", value=value, key=field_key)
+                elif isinstance(value, int):
                     updated_data[key] = st.number_input(f"{nice(key)}", value=value, key=field_key, step=1)
                 elif isinstance(value, float):
                     updated_data[key] = st.number_input(f"{nice(key)}", value=value, key=field_key, format="%.3f")
-                elif isinstance(value, bool):
-                    updated_data[key] = st.checkbox(f"{nice(key)}", value=value, key=field_key)
                 elif isinstance(value, str):
                     updated_data[key] = st.text_input(f"{nice(key)}", value=value, key=field_key)
         return updated_data
@@ -182,11 +190,13 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
                 write_config()
                 st.session_state["refresh_before"] = True
                 st.rerun()
+        st.stop()
     
     with stylable_container("Header", """
         button {
             border: none;
             width: 10px;
+            background-color: transparent;
         }
     """):
         _, r, c = st.columns([8, 1, 1])
@@ -255,6 +265,19 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     if 'history' not in st.session_state:
         st.session_state['history'] = 0
         st.session_state['max_history'] = 0
+        # Replace all error messages in the document to conform to the specified format.
+        # Example format: error(f"<summary>Failed to maintain connection to the instrument, likely server crash</summary><traceback>{e} {traceback.format_exc()}</traceback>")
+    def fetch_history():
+        if instrument:
+            try:
+                nn = int(instrument.n)
+                if nn != st.session_state['max_history']:
+                    st.session_state['history'] = nn
+                    st.session_state['max_history'] = nn
+            except (ValueError, TypeError): # a connection to the instrument is still present, but the results are lagging in their buffer
+                pass
+            except:
+                raise
 
     def fetch():
         if instrument:
@@ -262,10 +285,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             st.session_state['frequency'], st.session_state['frequency_units'], st.session_state['frequency_scaling'] = replace_prefix(instrument.frequency, properties['freq']['units'])
             st.session_state['nPrim'], st.session_state['nPrim_units'] = replace_suffix(instrument.nPrim, properties['nPrim']['units'])
             st.session_state['nSec'], st.session_state['nSec_units'] = replace_suffix(instrument.nSec, properties['nSec']['units'])
-            nn = int(instrument.n)
-            if nn != st.session_state['max_history']:
-                st.session_state['history'] = nn
-                st.session_state['max_history'] = nn
+            fetch_history()
             
     from OST import CouplingMeasurer
     if 'instrument' not in st.session_state:
@@ -278,9 +298,14 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             check_server_errors()
         except Exception as e:
             instrument = None
-            error(f"Failed to connect to the instrument at {ip}:{port}. Please check the connection and try again.")
+            error(f"<summary>Failed to connect to the instrument at {ip}:{port}. Please check the connection and try again.</summary><traceback>{e} {traceback.format_exc()}</traceback>")
     else:
         instrument = st.session_state['instrument']
+        try:
+            fetch_history()
+        except Exception as e:
+            instrument = None
+            error(f"<summary>Failed to maintain connection to the instrument, likely server crash</summary><traceback>{e} {traceback.format_exc()}</traceback>")
 
     g = grid([6, 1.8, 1.8], vertical_align='center')
 
@@ -294,7 +319,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         except Exception as e:
             print(e)
             st.session_state.pop('instrument', None)
-            error(f"Failed to connect to and perform a measurement on the instrument")
+            error(f"<summary>Failed to connect to and perform a measurement on the instrument</summary><traceback>{e} {traceback.format_exc()}</traceback>")
 
     if g.button("Reset", args=(), key="reset_button"):
         try:
@@ -304,7 +329,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         except Exception as e:
             print(e)
             st.session_state.pop('instrument', None)
-            error(f"Failed to connect to and reset the instrument")
+            error(f"<summary>Failed to connect to and reset the instrument</summary><traceback>{e} {traceback.format_exc()}</traceback>")
             
     if "refresh_before" not in st.session_state:
         st.session_state["refresh_before"] = False
@@ -338,7 +363,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     except Exception as e:
         print(e)
         st.session_state.pop('instrument', None)
-        error(f"Failed to connect to and set the instrument parameters")
+        error(f"<summary>Failed to connect to and set the instrument parameters</summary><traceback>{e} {traceback.format_exc()}</traceback>")
         
     if "n" not in st.session_state:
         st.session_state["n"] = "Raw Data"
@@ -490,6 +515,8 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         if v != st.session_state['history']:
             st.session_state['history'] = v
             st.rerun()
+    
+    write_config()
 
     from streamlit_autorefresh import st_autorefresh
     st_autorefresh(4000)

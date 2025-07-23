@@ -16,6 +16,7 @@ with open(os.path.join(os.path.dirname(__file__), "config.yaml"), 'r') as file:
     config = yaml.safe_load(file)
 
 import traceback
+from pyvisa import VisaIOError
 
 if __name__ == "__main__":
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -130,6 +131,7 @@ if __name__ == "__main__":
                     if not data:
                         break
                     data = data.decode()
+                    cmd = ''
                     try:
                         for line in data.split('\n'):
                             cmd = line.strip()
@@ -139,11 +141,20 @@ if __name__ == "__main__":
                                 conn.sendall(str(response).encode() + b'\n')
                     except Exception as e:
                         tb = traceback.format_exc().replace('\n', ' ').replace(',', ' ')
-                        print(f"Error: {e}")
-                        errors.append(f"-300,{e}\n{tb}")
+                        print(f"Error: {e} {tb}")
+
+                        if isinstance(e, VisaIOError):
+                            devices = []
+                            for device in config["measurement_devices"]:
+                                if device in tb:
+                                    devices.append(device[1:])
+                            if devices:
+                                errors.append(f"-300,<summary>Likely failed to connect to the device(s): {', '.join(devices)}; check that they are powered on and connected to the network</summary><traceback>{e} {tb}</traceback>")
+                                continue
+                        errors.append(f"-300,<summary>Error when executing {cmd}</summary><traceback>{e} {tb}</traceback>")
         except Exception as e:
             tb = traceback.format_exc()
-            print(f"Error: {e}")
+            print(f"Error: {e} {tb}")
 
     while True:
         conn, _ = s.accept()

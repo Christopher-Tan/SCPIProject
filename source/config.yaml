@@ -1,56 +1,53 @@
-server:
-  _IP: RaspberryIES002.ost.ch
-  port: 50024
-
 client:
-  windowMode: true
   developerMode: false
-
+  windowMode: true
+measurement_devices:
+  _DMM1: TCPIP0::MMIES013.ost.ch::INSTR
+  _DMM2: TCPIP0::MMies017.ost.ch::INSTR
+  _LCR: TCPIP0::LMGies001.ost.ch::INSTR
 properties:
-  freq:
-    units: Hz
-    default: 20000
-    min: 1000
-    max: 100000
-  voltLvl:
-    units: V
-    default: 2
-    min: 0.001
-    max: 2
-  nPrim:
-    units: 'turns'
-    default: 1
-    min: 1
-    max: 1000
-  nSec:
-    units: 'turns'
-    default: 2
-    min: 1
-    max: 1000
   L1:
     units: H
   L2:
     units: H
-  v1_prim:
-    units: V
-  v2_prim:
-    units: V
-  v1_sec:
-    units: V
-  v2_sec:
-    units: V
-  Ls1_prim:
-    units: H
   Lm:
-    units: H
-  Ls2_prim:
-    units: H
-  Ls:
     units: H
   Lp:
     units: H
-
-measurement_devices:
-  _DMM1: "TCPIP0::MMIES013.ost.ch::INSTR"
-  _DMM2: "TCPIP0::MMies017.ost.ch::INSTR"
-  _LCR: "TCPIP0::LMGies001.ost.ch::INSTR"
+  Ls:
+    units: H
+  Ls1_prim:
+    units: H
+  Ls2_prim:
+    units: H
+  freq:
+    default: 20000
+    max: 100000
+    min: 1000
+    units: Hz
+  nPrim:
+    default: 1
+    max: 1000
+    min: 1
+    units: turns
+  nSec:
+    default: 2
+    max: 1000
+    min: 1
+    units: turns
+  v1_prim:
+    units: V
+  v1_sec:
+    units: V
+  v2_prim:
+    units: V
+  v2_sec:
+    units: V
+  voltLvl:
+    default: 2
+    max: 2
+    min: 0.001
+    units: V
+server:
+  _IP: RaspberryIES002.ost.ch
+  port: 50024
