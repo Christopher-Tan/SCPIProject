@@ -49,29 +49,29 @@ To ensure the server starts automatically when the Raspberry Pi boots, follow th
 
 1. **Edit /etc/rc.local**  
 Edit this file to look as follows
-```bash
-#!/bin/bash
-# Replace the following placeholders with your specific details:
-# {env} - Path to your virtual environment's Python binary
-# {project_location} - Path to your SCPIProject folder
+    ```bash
+    #!/bin/bash
+    # Replace the following placeholders with your specific details:
+    # {env} - Path to your virtual environment's Python binary
+    # {project_location} - Path to your SCPIProject folder
 
-sudo {env}/python3 {project_location}/source/SCPIServer.py &
-```
+    sudo {env}/python3 {project_location}/source/SCPIServer.py &
+    ```
 
-Remember to give the file the following permissions
-```
-sudo chmod 755 /etc/rc.local
-```
+    Remember to give the file the following permissions
+    ```
+    sudo chmod 755 /etc/rc.local
+    ```
 
-### Example:
-If your virtual environment is located at `/home/pi/venv` and your project is in `/home/pi/SCPIProject`, the script would look like this:
-```bash
-#!/bin/bash
-sudo /home/pi/venv/bin/python3 /home/pi/SCPIProject/source/SCPIServer.py &
-```
-If this is indeed your set up, this is a standard default you can use the following script to do all of the above
+    ### Example:
+    If your virtual environment is located at `/home/pi/venv` and your project is in `/home/pi/SCPIProject`, the script would look like this:
+    ```bash
+    #!/bin/bash
+    sudo /home/pi/venv/bin/python3 /home/pi/SCPIProject/source/SCPIServer.py &
+    ```
+    If this is indeed your set up, this is a standard default you can use the following script to do all of the above
 
-```bash
-echo -e '#!/bin/bash\nsudo /home/pi/venv/bin/python3 /home/pi/SCPIProject/source/SCPIServer.py &' | sudo tee /etc/rc.local
-sudo chmod 755 /etc/rc.local
-```
+    ```bash
+    echo -e '#!/bin/bash\nsudo /home/pi/venv/bin/python3 /home/pi/SCPIProject/source/SCPIServer.py &' | sudo tee /etc/rc.local
+    sudo chmod 755 /etc/rc.local
+    ```
