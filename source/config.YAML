@@ -1,8 +1,10 @@
-ip: RaspberryIES002.ost.ch
-port: 50024
+server:
+  _IP: RaspberryIES002.ost.ch
+  port: 50024
 
-windowMode: true
-developerMode: false
+client:
+  windowMode: true
+  developerMode: false
 
 properties:
   freq:
@@ -55,3 +57,8 @@ properties:
     units: H
   N:
     units: ''
+
+measurement_devices:
+  coupMeas_DMM1: "TCPIP0::MMIES013.ost.ch::INSTR"
+  coupMeas_DMM2: "TCPIP0::MMies017.ost.ch::INSTR"
+  coupMeas_LCR: "TCPIP0::LMGies001.ost.ch::INSTR"

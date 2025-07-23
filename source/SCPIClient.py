@@ -11,7 +11,7 @@ if __name__ == "__main__":
         config = yaml.safe_load(file)
 
     process = subprocess.Popen(
-        ["streamlit", "run", os.path.join(os.path.dirname(__file__), "GUI.py"), f"--server.headless={config['windowMode']}", "streamlit"],
+        ["streamlit", "run", os.path.join(os.path.dirname(__file__), "GUI.py"), f"--server.headless={config["client"]['windowMode']}", "streamlit"],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
@@ -36,9 +36,10 @@ if __name__ == "__main__":
         except:
             return False
 
-    if config['windowMode']:
+    if config["client"]['windowMode']:
         if is_raspberry_pi():
             subprocess.Popen(["chromium-browser", "--kiosk", url])
         else:
-            webview.create_window("Coupling measurements", url, width=800, height=600)
-            webview.start()
+            webview.create_window("Coupling measurements", url, width=800, height=600, text_select=True)
+            webview.start(debug=config["client"]['developerMode'])
+            process.terminate() # close the Streamlit process when the window is closed

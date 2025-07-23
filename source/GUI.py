@@ -10,8 +10,8 @@ import os
 with open(os.path.join(os.path.dirname(__file__), "config.yaml"), 'r') as file:
     config = yaml.safe_load(file)
     
-ip = config['ip']
-port = config['port']
+ip = config["server"]['_IP']
+port = config["server"]['port']
 properties = config['properties']
 
 if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
@@ -363,7 +363,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
                 'v1_prim': format_with_units(instrument.channels[st.session_state['history']].v1_prim, properties['v1_prim']['units']),
                 'v2_prim': format_with_units(instrument.channels[st.session_state['history']].v2_prim, properties['v2_prim']['units']),
                 'v1_sec': format_with_units(instrument.channels[st.session_state['history']].v1_sec, properties['v1_sec']['units']),
-                'v2_sec': format_with_units(instrument.channels[st.session_state['should behistory']].v2_sec, properties['v2_sec']['units']),
+                'v2_sec': format_with_units(instrument.channels[st.session_state['history']].v2_sec, properties['v2_sec']['units']),
             }
             st.table(data)
         elif n == "T-Model":
@@ -395,8 +395,10 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
 elif __name__ == "__main__":
     import subprocess
     
+    import sys
+    
     process = subprocess.Popen(
-        ["python", os.path.join(os.path.dirname(__file__), "SCPIClient.py")],
+        [sys.executable, os.path.join(os.path.dirname(__file__), "SCPIClient.py")],
     )
     
     process.wait()
