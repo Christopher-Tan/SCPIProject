@@ -343,8 +343,6 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             fetch()
             check_server_errors()
         except Exception as e:
-            print(e)
-            st.session_state.pop('instrument', None)
             error(f"<summary>Failed to connect to and perform a measurement on the instrument</summary><traceback>{e} {traceback.format_exc()}</traceback>")
 
     if g.button("Reset", args=(), key="reset_button"):
@@ -353,8 +351,6 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             fetch()
             check_server_errors()
         except Exception as e:
-            print(e)
-            st.session_state.pop('instrument', None)
             error(f"<summary>Failed to connect to and reset the instrument</summary><traceback>{e} {traceback.format_exc()}</traceback>")
             
     if "refresh_before" not in st.session_state:
@@ -387,8 +383,6 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             st.rerun()
         check_server_errors()
     except Exception as e:
-        print(e)
-        st.session_state.pop('instrument', None)
         error(f"<summary>Failed to connect to and set the instrument parameters</summary><traceback>{e} {traceback.format_exc()}</traceback>")
         
     if "n" not in st.session_state:
@@ -429,6 +423,43 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         st.rerun()
 
     n = st.session_state["n"]
+    def format_with_units(value, units):
+        if isinstance(value, str):
+            return value
+        value, units, _ = replace_prefix(value, units)
+        return f"{value:.3f} {units}"
+    
+    def special_format(value, percent=False):
+        if isinstance(value, str) or isinstance(value, int):
+            return value
+        if percent:
+            return f"{value * 100:.3f} %"
+        return f"{value:.3f}"
+    try:
+        data = {
+            'voltage': format_with_units(instrument.channels[st.session_state['history']].voltage, properties['voltLvl']['units']),
+            'frequency': format_with_units(instrument.channels[st.session_state['history']].frequency, properties['freq']['units']),
+            'L1': format_with_units(instrument.channels[st.session_state['history']].L1, properties['L1']['units']),
+            'L2': format_with_units(instrument.channels[st.session_state['history']].L2, properties['L2']['units']),
+            'k': special_format(instrument.channels[st.session_state['history']].k, percent=True),
+            'k1': special_format(instrument.channels[st.session_state['history']].k1, percent=True),
+            'k2': special_format(instrument.channels[st.session_state['history']].k2, percent=True),
+            'v1_prim': format_with_units(instrument.channels[st.session_state['history']].v1_prim, properties['v1_prim']['units']),
+            'v2_prim': format_with_units(instrument.channels[st.session_state['history']].v2_prim, properties['v2_prim']['units']),
+            'v1_sec': format_with_units(instrument.channels[st.session_state['history']].v1_sec, properties['v1_sec']['units']),
+            'v2_sec': format_with_units(instrument.channels[st.session_state['history']].v2_sec, properties['v2_sec']['units']),
+            'Ls1_prim': format_with_units(instrument.channels[st.session_state['history']].Ls1_prim, properties['Ls1_prim']['units']),
+            'Lm': format_with_units(instrument.channels[st.session_state['history']].Lm, properties['Lm']['units']),
+            'Ls2_prim': format_with_units(instrument.channels[st.session_state['history']].Ls2_prim, properties['Ls2_prim']['units']),
+            'nPrim': special_format(instrument.channels[st.session_state['history']].nPrim),
+            'nSec': special_format(instrument.channels[st.session_state['history']].nSec),
+            'Ls': format_with_units(instrument.channels[st.session_state['history']].Ls, properties['Ls']['units']),
+            'Lp': format_with_units(instrument.channels[st.session_state['history']].Lp, properties['Lp']['units']),
+            'N': special_format(instrument.channels[st.session_state['history']].N),
+        }
+    except Exception as e:
+        error(f"<summary>Failed to connect to and fetch the measurement data</summary><traceback>{e} {traceback.format_exc()}</traceback>")
+
     
     import schemdraw
     import schemdraw.elements as elm
@@ -488,53 +519,16 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         render(d)
         
     try:
-        def format_with_units(value, units):
-            if isinstance(value, str):
-                return value
-            value, units, _ = replace_prefix(value, units)
-            return f"{value:.3f} {units}"
-        
-        def special_format(value, percent=False):
-            if isinstance(value, str) or isinstance(value, int):
-                return value
-            if percent:
-                return f"{value * 100:.3f} %"
-            return f"{value:.3f}"
 
         if n == "Raw Data":
-            data = {
-                'voltage': format_with_units(instrument.channels[st.session_state['history']].voltage, properties['voltLvl']['units']),
-                'frequency': format_with_units(instrument.channels[st.session_state['history']].frequency, properties['freq']['units']),
-                'L1': format_with_units(instrument.channels[st.session_state['history']].L1, properties['L1']['units']),
-                'L2': format_with_units(instrument.channels[st.session_state['history']].L2, properties['L2']['units']),
-                'k': special_format(instrument.channels[st.session_state['history']].k, percent=True),
-                'k1': special_format(instrument.channels[st.session_state['history']].k1, percent=True),
-                'k2': special_format(instrument.channels[st.session_state['history']].k2, percent=True),
-                'v1_prim': format_with_units(instrument.channels[st.session_state['history']].v1_prim, properties['v1_prim']['units']),
-                'v2_prim': format_with_units(instrument.channels[st.session_state['history']].v2_prim, properties['v2_prim']['units']),
-                'v1_sec': format_with_units(instrument.channels[st.session_state['history']].v1_sec, properties['v1_sec']['units']),
-                'v2_sec': format_with_units(instrument.channels[st.session_state['history']].v2_sec, properties['v2_sec']['units']),
-            }
             st.table(data)
         elif n == "T-Model":
-            data = {
-                'Ls1_prim': format_with_units(instrument.channels[st.session_state['history']].Ls1_prim, properties['Ls1_prim']['units']),
-                'Lm': format_with_units(instrument.channels[st.session_state['history']].Lm, properties['Lm']['units']),
-                'Ls2_prim': format_with_units(instrument.channels[st.session_state['history']].Ls2_prim, properties['Ls2_prim']['units']),
-                'nPrim': special_format(instrument.channels[st.session_state['history']].nPrim),
-                'nSec': special_format(instrument.channels[st.session_state['history']].nSec),
-            }
             t_model(data)
         elif n == "Gamma-Model":
-            data = {
-                'Ls': format_with_units(instrument.channels[st.session_state['history']].Ls, properties['Ls']['units']),
-                'Lp': format_with_units(instrument.channels[st.session_state['history']].Lp, properties['Lp']['units']),
-                'N': special_format(instrument.channels[st.session_state['history']].N),
-            }
             gamma_model(data)
         check_server_errors()
     except Exception as e:
-        print(e)
+        pass
         
     if st.session_state['max_history'] > 1:
         v = st.slider("Measurement", min_value=1, max_value=st.session_state['max_history'], value=st.session_state['history'])
