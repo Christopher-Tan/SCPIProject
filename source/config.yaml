@@ -39,12 +39,6 @@ properties:
     units: V
   v2_sec:
     units: V
-  k:
-    units: ''
-  k1:
-    units: ''
-  k2:
-    units: ''
   Ls1_prim:
     units: H
   Lm:
@@ -55,10 +49,8 @@ properties:
     units: H
   Lp:
     units: H
-  N:
-    units: ''
 
 measurement_devices:
-  coupMeas_DMM1: "TCPIP0::MMIES013.ost.ch::INSTR"
-  coupMeas_DMM2: "TCPIP0::MMies017.ost.ch::INSTR"
-  coupMeas_LCR: "TCPIP0::LMGies001.ost.ch::INSTR"
+  _DMM1: "TCPIP0::MMIES013.ost.ch::INSTR"
+  _DMM2: "TCPIP0::MMies017.ost.ch::INSTR"
+  _LCR: "TCPIP0::LMGies001.ost.ch::INSTR"

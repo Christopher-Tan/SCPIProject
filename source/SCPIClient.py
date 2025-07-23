@@ -1,17 +1,17 @@
 import subprocess
 import threading
-import time
 import webview
 import os
+import yaml
+import sys
+
 
 if __name__ == "__main__":
-    import os
-    import yaml
     with open(os.path.join(os.path.dirname(__file__), "config.yaml"), 'r') as file:
         config = yaml.safe_load(file)
 
     process = subprocess.Popen(
-        ["streamlit", "run", os.path.join(os.path.dirname(__file__), "GUI.py"), f"--server.headless={config["client"]['windowMode']}", "streamlit"],
+        [sys.executable, "-m", "streamlit", "run", os.path.join(os.path.dirname(__file__), "GUI.py"), f"--server.headless={config['client']['windowMode']}", "streamlit"],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,

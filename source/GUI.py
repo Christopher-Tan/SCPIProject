@@ -14,10 +14,15 @@ ip = config["server"]['_IP']
 port = config["server"]['port']
 properties = config['properties']
 
+def write_config():
+    with open(os.path.join(os.path.dirname(__file__), "config.yaml"), 'w') as file:
+        yaml.dump(config, file, default_flow_style=False)
+
 if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     import streamlit as st
     from streamlit_extras.grid import grid
     from streamlit_navigation_bar import st_navbar
+    from streamlit_extras.stylable_container import stylable_container
     
     from math import log10, floor, isclose
     
@@ -33,6 +38,8 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     from streamlit.runtime import get_instance
     
     import threading
+    
+    from bs4 import BeautifulSoup
     
     def heartbeat(user):
         thread = threading.Timer(interval=2, function=heartbeat, args=(user,)) # prepare to run in new thread, this current thread will be killed then
@@ -53,7 +60,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         
     def fetch_server_errors():
         try:
-            return instrument.check_errors()
+            return [i[1] for i in instrument.check_errors()]
         except:
             pass
         return []
@@ -61,27 +68,52 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     def check_server_errors(): # sometimes the client side has no errors we still need to check
         errors = fetch_server_errors()
         if errors:
-            error(f"Server side error: {'\n'.join(errors)}", replace_instrument=False)
+            error(f"", errors, replace_instrument=False)
+    
+    def special_write(error):
+        try:
+            html = BeautifulSoup(error)
+            summary = html.body.find('summary').text
+            trace = html.body.find('traceback').text
+            with st.expander(summary):
+                st.write(trace)
+        except:
+            st.write(error)
     
     @st.dialog("Error")
-    def error(message, replace_instrument=True): # sometimes the client side error is a direct result of the server side error, we show these errors first
-        errors = fetch_server_errors()
-        if errors:
-            st.write(f"Server side error: {'\n'.join(errors)}")
+    def error(main_error, likely_causes=[], replace_instrument=True): # sometimes the client side error is a direct result of the server side error, we show these errors first
+        st.markdown("""
+            <style>
+                [role="dialog"] {
+                    background-color: #FF7F7F;
+                }
+            </style>
+        """, unsafe_allow_html=True)
+
+        likely_causes.extend(fetch_server_errors())
+        if likely_causes:
+            for cause in likely_causes:
+                special_write(cause)
 
         if replace_instrument:
             cleanup()
             st.session_state.pop('instrument', None)
             
-        st.write(message)
+        special_write(main_error)
         
-        if st.button("Retry"):
-            st.session_state["refresh_after"] = True
-            st.rerun()
+        with stylable_container("Retry", """
+                button {
+                    background-color: #FF7F7F;
+                }
+        """):
         
+            if st.button("Retry"):
+                st.session_state["refresh_before"] = True
+                st.rerun()
+            
         st.stop()
         
-    if not config['developerMode']:
+    if not config["client"]['developerMode']:
         fetch_server_errors()
         st.markdown("""
             <style>
@@ -102,8 +134,70 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
                 padding-left: 4rem;
                 padding-right: 4rem;
             }
+            .stToast {
+                background-color: #88E788;
+            }
         </style>
     """, unsafe_allow_html=True)
+    
+    import re
+    def nice(text):
+        """Converts various cases (camelCase, kebab-case, snake_case, etc.) into Capitalized Case."""
+        
+        # Replace kebab-case and snake_case with spaces
+        text = re.sub(r'[\-_]', ' ', text)
+        
+        # Split camelCase into words
+        text = re.sub(r'(?<!^)(?=[A-Z])', ' ', text)
+        
+        # Capitalize each word and join with a space
+        return ' '.join(word.capitalize() for word in text.split())
+        
+    
+    def nested_dict_to_form(data, parent_key='', separator='_'):
+        """Recursively converts a nested dictionary into Streamlit form fields and returns the updated dictionary."""
+        updated_data = {}
+        for key, value in data.items():
+            field_key = f"{parent_key}{separator}{key}" if parent_key else key
+            if isinstance(value, dict):
+                with st.expander(f"**{nice(key)}**", expanded=True):
+                    updated_data[key] = nested_dict_to_form(value, parent_key=field_key, separator=separator)
+            else:
+                if isinstance(value, int):
+                    updated_data[key] = st.number_input(f"{nice(key)}", value=value, key=field_key, step=1)
+                elif isinstance(value, float):
+                    updated_data[key] = st.number_input(f"{nice(key)}", value=value, key=field_key, format="%.3f")
+                elif isinstance(value, bool):
+                    updated_data[key] = st.checkbox(f"{nice(key)}", value=value, key=field_key)
+                elif isinstance(value, str):
+                    updated_data[key] = st.text_input(f"{nice(key)}", value=value, key=field_key)
+        return updated_data
+    
+    @st.dialog("Configuration")
+    def configure():
+        with st.form("config_form"):
+            global config
+            config = nested_dict_to_form(config)
+            if st.form_submit_button("Save"):
+                write_config()
+                st.session_state["refresh_before"] = True
+                st.rerun()
+    
+    with stylable_container("Header", """
+        button {
+            border: none;
+            width: 10px;
+        }
+    """):
+        _, r, c = st.columns([8, 1, 1])
+        
+        if r.button("↻", key="rerun", use_container_width=True):
+            st.session_state["refresh_before"] = True
+            st.rerun()
+            
+        if c.button("⚙️", key="config", use_container_width=True):
+            configure()
+            
     metric_prefixes = {
         'y': 1e-24, 
         'z': 1e-21,
@@ -275,7 +369,8 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             'hover': {
                 'background-color': 'rgb(255, 255, 255)',
             },
-        }
+        },
+        key="navbar"
     )
     
     if n and n != st.session_state["n"]:
@@ -343,12 +438,16 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         
     try:
         def format_with_units(value, units):
+            if isinstance(value, str):
+                return value
             value, units, _ = replace_prefix(value, units)
             return f"{value:.3f} {units}"
         
-        def special_format(value):
-            if isinstance(value, str):
+        def special_format(value, percent=False):
+            if isinstance(value, str) or isinstance(value, int):
                 return value
+            if percent:
+                return f"{value * 100:.3f} %"
             return f"{value:.3f}"
 
         if n == "Raw Data":
@@ -357,9 +456,9 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
                 'frequency': format_with_units(instrument.channels[st.session_state['history']].frequency, properties['freq']['units']),
                 'L1': format_with_units(instrument.channels[st.session_state['history']].L1, properties['L1']['units']),
                 'L2': format_with_units(instrument.channels[st.session_state['history']].L2, properties['L2']['units']),
-                'k': special_format(instrument.channels[st.session_state['history']].k),
-                'k1': special_format(instrument.channels[st.session_state['history']].k1),
-                'k2': special_format(instrument.channels[st.session_state['history']].k2),
+                'k': special_format(instrument.channels[st.session_state['history']].k, percent=True),
+                'k1': special_format(instrument.channels[st.session_state['history']].k1, percent=True),
+                'k2': special_format(instrument.channels[st.session_state['history']].k2, percent=True),
                 'v1_prim': format_with_units(instrument.channels[st.session_state['history']].v1_prim, properties['v1_prim']['units']),
                 'v2_prim': format_with_units(instrument.channels[st.session_state['history']].v2_prim, properties['v2_prim']['units']),
                 'v1_sec': format_with_units(instrument.channels[st.session_state['history']].v1_sec, properties['v1_sec']['units']),
@@ -371,8 +470,8 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
                 'Ls1_prim': format_with_units(instrument.channels[st.session_state['history']].Ls1_prim, properties['Ls1_prim']['units']),
                 'Lm': format_with_units(instrument.channels[st.session_state['history']].Lm, properties['Lm']['units']),
                 'Ls2_prim': format_with_units(instrument.channels[st.session_state['history']].Ls2_prim, properties['Ls2_prim']['units']),
-                'nPrim': int(instrument.channels[st.session_state['history']].nPrim),
-                'nSec': int(instrument.channels[st.session_state['history']].nSec),
+                'nPrim': special_format(instrument.channels[st.session_state['history']].nPrim),
+                'nSec': special_format(instrument.channels[st.session_state['history']].nSec),
             }
             t_model(data)
         elif n == "Gamma-Model":
@@ -391,6 +490,9 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         if v != st.session_state['history']:
             st.session_state['history'] = v
             st.rerun()
+
+    from streamlit_autorefresh import st_autorefresh
+    st_autorefresh(4000)
 
 elif __name__ == "__main__":
     import subprocess

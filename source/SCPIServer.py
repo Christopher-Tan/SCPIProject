@@ -73,7 +73,6 @@ if __name__ == "__main__":
             self.update_viewers()
             
     measurement_list = UpdatingList()
-    new_measurement = Measurements()
     
     from collections import deque
 
@@ -82,10 +81,12 @@ if __name__ == "__main__":
         try:
             with conn:
                 measurements = measurement_list.create_viewer()
+                new_measurement = Measurements()
+                
                 def measure():
                     """Perform a measurement and update the new_measurement instance."""
                     new_measurement.measure()
-                    measurements.append(copy(new_measurement))
+                    measurement_list.append(copy(new_measurement))
                     
                 parser = SCPIParser({
                     ":MEASure:HISTory:COUPling:K?": lambda measurement=0: measurements[measurement].k,
@@ -137,7 +138,7 @@ if __name__ == "__main__":
                             if response is not None:
                                 conn.sendall(str(response).encode() + b'\n')
                     except Exception as e:
-                        tb = traceback.format_exc()
+                        tb = traceback.format_exc().replace('\n', ' ').replace(',', ' ')
                         print(f"Error: {e}")
                         errors.append(f"-300,{e}\n{tb}")
         except Exception as e:
