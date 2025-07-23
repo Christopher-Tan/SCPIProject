@@ -130,6 +130,12 @@ class CouplingMeasurer(Instrument):
     def reset(self):
         """Reset the instrument to its default state."""
         self.write("*RST")
+        
+    def update_children(self):
+        """Update the child channels of the instrument."""
+        for i in range(int(self.n)+1):
+            if i not in self.channels:
+                self.add_child(CouplingMeasurement, i)        
     
     def measure(self):
         """Trigger a measurement."""

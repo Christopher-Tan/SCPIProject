@@ -262,6 +262,31 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     
     st.set_page_config(page_title="Coupling Measurements", layout="wide")
     
+    def stringify(dic, prefix=""):
+        """Convert a dictionary to a string representation."""
+        s = ""
+        for key, value in dic.items():
+            name = f'{prefix}:{key}' if prefix else key
+            if isinstance(value, dict):
+                s += f'{";" if s else ""}{stringify(value, name)}'
+            else:
+                if isinstance(value, str):
+                    value = f"'{value}'"
+                s += f'{";" if s else ""}{name}:{str(value)}'
+        return s
+    
+    def apply(dic, string):
+        for item in string.split(';'):
+            k, v = item.rsplit(':', 1)
+            temp = dic
+            keys = k.split(':')
+            
+            for key in keys[:-1]:
+                temp = temp[key]
+            import ast
+            temp[keys[-1]] = ast.literal_eval(v)
+        return dic
+    
     if 'history' not in st.session_state:
         st.session_state['history'] = 0
         st.session_state['max_history'] = 0
@@ -274,6 +299,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
                 if nn != st.session_state['max_history']:
                     st.session_state['history'] = nn
                     st.session_state['max_history'] = nn
+                instrument.update_children()
             except (ValueError, TypeError): # a connection to the instrument is still present, but the results are lagging in their buffer
                 pass
             except:
