@@ -24,13 +24,8 @@ def float_attempt(value):
     except ValueError:
         return value
     
-def get_config():
-    """Load the configuration from the YAML file."""
-    global config
-    with open(os.path.join(os.path.dirname(__file__), "config.yaml"), 'r') as file:
-        config = yaml.safe_load(file)
-
-get_config()
+from utils import *
+config = read_config()
 
 class Measurements:
     """Class to hold the measurements of a transformer coupling measurement."""
@@ -61,7 +56,8 @@ class Measurements:
             
     def measure(self):
         """Perform the measurement and update the attributes."""
-        get_config()
+        global config
+        config = read_config()
         measurements = measure(self.freq, self.voltLvl, self.nPrim, self.nSec)
         for key, value in measurements.items():
             if hasattr(self, key):

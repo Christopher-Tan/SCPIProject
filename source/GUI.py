@@ -9,13 +9,6 @@ import os
 
 import traceback
 
-from utils import *
-config = read_config()
-
-ip = config["server"]['_IP']
-port = config["server"]['port']
-properties = config['properties']
-
 if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     import streamlit as st
     from streamlit_extras.grid import grid
@@ -23,6 +16,13 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     from streamlit_extras.stylable_container import stylable_container
     
     from math import log10, floor, isclose
+    
+    from utils import *
+    config = read_config()
+
+    ip = config["server"]['_IP']
+    port = config["server"]['port']
+    properties = config['properties']
     
     def cleanup():
         try:
@@ -118,6 +118,12 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
                 .stAppHeader {
                     display: none;
                 }
+                .block-container {
+                    padding-top: 0.4rem;
+                    padding-bottom: 1rem;
+                    padding-left: 4rem;
+                    padding-right: 4rem;
+                }
             </style>
         """, unsafe_allow_html=True)
         
@@ -125,12 +131,6 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         <style>
             h1 {
                 padding: 0px !important;
-            }
-            .block-container {
-                padding-top: 0.4rem;
-                padding-bottom: 1rem;
-                padding-left: 4rem;
-                padding-right: 4rem;
             }
             .stToast {
                 background-color: #88E788;
@@ -154,14 +154,14 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         return ' '.join(word.capitalize() for word in text.split())
         
     
-    def nested_dict_to_form(data, parent_key='', separator='_'):
+    def nested_dict_to_form(data, parent_key=''):
         """Recursively converts a nested dictionary into Streamlit form fields and returns the updated dictionary."""
         updated_data = {}
         for key, value in data.items():
-            field_key = f"{parent_key}{separator}{key}" if parent_key else key
+            field_key = f"{parent_key}{path_separator}{key}" if parent_key else key
             if isinstance(value, dict):
-                with st.expander(f"**{nice(key)}**", expanded=True):
-                    updated_data[key] = nested_dict_to_form(value, parent_key=field_key, separator=separator)
+                with st.expander(f"**{nice(key)}**"):
+                    updated_data[key] = nested_dict_to_form(value, parent_key=field_key)
             else:
                 if isinstance(value, bool):
                     updated_data[key] = st.checkbox(f"{nice(key)}", value=value, key=field_key)
@@ -170,16 +170,16 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
                 elif isinstance(value, float):
                     updated_data[key] = st.number_input(f"{nice(key)}", value=value, key=field_key, format="%.3f")
                 elif isinstance(value, str):
-                    updated_data[key] = st.text_input(f"{nice(key)}", value=value, key=field_key)
+                    updated_data[key] = st.text_input(f"{nice(key)}", value=value, key=field_key).replace(path_separator, '').replace(config_separator, '').replace(SCPI_argument_separator, '').replace(SCPI_command_separator, '')
         return updated_data
     
-    @st.dialog("Configuration")
+    @st.dialog("Configuration", width="large")
     def configure():
         with st.form("config_form"):
-            global config
-            config = nested_dict_to_form(config)
+            from copy import deepcopy
+            st.session_state["conf"] = deepcopy(nested_dict_to_form(config))
             if st.form_submit_button("Save"):
-                write_config(config)
+                write_config(st.session_state["conf"])
                 st.session_state["refresh_before"] = True
                 st.rerun()
         st.stop()
@@ -253,37 +253,10 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         return value, units
     
     st.set_page_config(page_title="Coupling Measurements", layout="wide")
-    
-    def stringify(dic, prefix=""):
-        """Convert a dictionary to a string representation."""
-        s = ""
-        for key, value in dic.items():
-            name = f'{prefix}:{key}' if prefix else key
-            if isinstance(value, dict):
-                s += f'{";" if s else ""}{stringify(value, name)}'
-            else:
-                if isinstance(value, str):
-                    value = f"'{value}'"
-                s += f'{";" if s else ""}{name}:{str(value)}'
-        return s
-    
-    def apply(dic, string):
-        for item in string.split(';'):
-            k, v = item.rsplit(':', 1)
-            temp = dic
-            keys = k.split(':')
-            
-            for key in keys[:-1]:
-                temp = temp[key]
-            import ast
-            temp[keys[-1]] = ast.literal_eval(v)
-        return dic
-    
+        
     if 'history' not in st.session_state:
         st.session_state['history'] = 0
         st.session_state['max_history'] = 0
-        # Replace all error messages in the document to conform to the specified format.
-        # Example format: error(f"<summary>Failed to maintain connection to the instrument, likely server crash</summary><traceback>{e} {traceback.format_exc()}</traceback>")
     def fetch_history():
         if instrument:
             try:
@@ -316,26 +289,63 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             check_server_errors()
         except Exception as e:
             instrument = None
-            error(f"<summary>Failed to connect to the instrument at {ip}:{port}. Please check the connection and try again.</summary><traceback>{e} {traceback.format_exc()}</traceback>")
+            error(f"<summary>Failed to connect to the instrument at {ip}:{port}. Please check the connection and try again.</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
     else:
         instrument = st.session_state['instrument']
+        if instrument.adapter.resource_name != f"TCPIP::{ip}::{port}::SOCKET":
+            st.session_state.pop('instrument', None)
+            st.rerun()
         try:
             fetch_history()
         except Exception as e:
             instrument = None
-            error(f"<summary>Failed to maintain connection to the instrument, likely server crash</summary><traceback>{e} {traceback.format_exc()}</traceback>")
+            error(f"<summary>Failed to maintain connection to the instrument, likely server crash</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
+
+    if "conf" in st.session_state:
+        config = st.session_state["conf"]
+        st.session_state.pop("conf", None)
+        
+        try:
+            instrument.config = shared_configs(config)
+            #st.rerun()
+        except Exception as e:
+            error(f"<summary>Failed to apply the configuration</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
+
+    @st.dialog("Configuration Changed")
+    def confirm():
+        st.write("Since the last time you've connected, your configuration files and the servers have diverged. This can be due to other users updating the configuration or this could be intentional on your part by manually changing config.yaml. Please choose to either publish your updates to the server or fetch the servers new configuration.")
+        
+        a, b = st.columns(2)
+        if a.button("Publish local changes", use_container_width=True):
+            instrument.config = shared_configs(config)
+            st.session_state["refresh_before"] = True
+            st.rerun()
+        elif b.button("Fetch server configuration", use_container_width=True):
+            st.session_state["refresh_before"] = True
+            st.rerun()
+        st.stop()
+        
+    try:
+        new_config = instrument.config
+        if "file_change" not in st.session_state:
+            st.session_state["file_change"] = True
+            if set(new_config.split(config_separator)) != set(shared_configs(config).split(config_separator)):
+                confirm()
+        apply(config, new_config)
+    except Exception as e:
+        error(f"<summary>Failed to fetch the configuration from the instrument</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
 
     g = grid([6, 1.8, 1.8], vertical_align='center')
 
     g.title("Coupling Measurements")
-    if g.button("Measure", args=(), key="measure_button"):
+    if g.button("Run", args=(), key="measure_button"):
         try:
             with st.spinner("Waiting for measurement to complete...", show_time=True):
                 instrument.measure()
             fetch()
             check_server_errors()
         except Exception as e:
-            error(f"<summary>Failed to connect to and perform a measurement on the instrument</summary><traceback>{e} {traceback.format_exc()}</traceback>")
+            error(f"<summary>Failed to connect to and perform a measurement on the instrument</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
 
     if g.button("Reset", args=(), key="reset_button"):
         try:
@@ -343,7 +353,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             fetch()
             check_server_errors()
         except Exception as e:
-            error(f"<summary>Failed to connect to and reset the instrument</summary><traceback>{e} {traceback.format_exc()}</traceback>")
+            error(f"<summary>Failed to connect to and reset the instrument</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
             
     if "refresh_before" not in st.session_state:
         st.session_state["refresh_before"] = False
@@ -360,9 +370,9 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         
     g = grid([0.86, 0.6, 0.86, 0.6, 0.86, 0.6, 0.86, 0.6], vertical_align='bottom')
     try:
-        instrument.voltage = g.number_input("Voltage", key="voltage", format="%0.3f", on_change=refresh, step=1.0/st.session_state['voltage_scaling'], min_value=properties['voltLvl']['min']/st.session_state['voltage_scaling'], max_value=properties['voltLvl']['max']/st.session_state['voltage_scaling']) * st.session_state['voltage_scaling']
+        instrument.voltage = g.number_input("Voltage", key="voltage", format="%0.3f", on_change=refresh, step=properties['voltLvl']['step']/st.session_state['voltage_scaling'], min_value=properties['voltLvl']['min']/st.session_state['voltage_scaling'], max_value=properties['voltLvl']['max']/st.session_state['voltage_scaling'], format=properties['voltLvl']['format']) * st.session_state['voltage_scaling']
         g.write(st.session_state['voltage_units'])
-        instrument.frequency = g.number_input("Frequency", key="frequency", format="%0.3f", on_change=refresh, step=1.0/st.session_state['frequency_scaling'], min_value=properties['freq']['min']/st.session_state['frequency_scaling'], max_value=properties['freq']['max']/st.session_state['frequency_scaling']) * st.session_state['frequency_scaling']
+        instrument.frequency = g.number_input("Frequency", key="frequency", format="%0.3f", on_change=refresh, step=properties['freq']['step']/st.session_state['frequency_scaling'], min_value=properties['freq']['min']/st.session_state['frequency_scaling'], max_value=properties['freq']['max']/st.session_state['frequency_scaling'], format=properties['freq']['format']) * st.session_state['frequency_scaling']
         g.write(st.session_state['frequency_units'])
         instrument.nPrim = g.number_input("nPrim", key="nPrim", on_change=refresh, step=1, min_value=properties['nPrim']['min'], max_value=properties['nPrim']['max'])
         g.write(st.session_state['nPrim_units'])
@@ -375,7 +385,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             st.rerun()
         check_server_errors()
     except Exception as e:
-        error(f"<summary>Failed to connect to and set the instrument parameters</summary><traceback>{e} {traceback.format_exc()}</traceback>")
+        error(f"<summary>Failed to connect to and set the instrument parameters</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
         
     if "n" not in st.session_state:
         st.session_state["n"] = "Raw Data"
@@ -450,7 +460,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             'N': special_format(instrument.channels[st.session_state['history']].N),
         }
     except Exception as e:
-        error(f"<summary>Failed to connect to and fetch the measurement data</summary><traceback>{e} {traceback.format_exc()}</traceback>")
+        error(f"<summary>Failed to connect to and fetch the measurement data</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
 
     
     import schemdraw

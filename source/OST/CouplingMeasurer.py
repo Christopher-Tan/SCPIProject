@@ -2,6 +2,11 @@ from pymeasure.instruments import Instrument, Channel
 
 from pymeasure.instruments.validators import strict_range
 
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from utils import *
 config = read_config()
 
@@ -176,4 +181,12 @@ class CouplingMeasurer(Instrument):
         """A property that controls the number of secondary turns.""",
         validator=strict_range,
         values=[config['properties']['nSec']['min'], config['properties']['nSec']['max']]
+    )
+
+    config = Instrument.control(
+        ":CONFig?",
+        ":CONFig %s",
+        """A property that controls the configuration of the instrument.
+        The configuration is a string representation of the current settings.
+        """
     )

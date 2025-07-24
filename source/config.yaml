@@ -25,6 +25,8 @@ properties:
     max: 100000
     min: 1000
     units: Hz
+    step: 1000
+    format: "%.0f"
   nPrim:
     default: 1
     max: 1000
@@ -48,6 +50,8 @@ properties:
     max: 2
     min: 0.001
     units: V
+    step: 0.1
+    format: "%.1f"
 server:
   _IP: RaspberryIES002.ost.ch
   port: 50024
