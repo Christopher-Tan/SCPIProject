@@ -547,9 +547,9 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         
     g = grid([0.86, 0.6, 0.86, 0.6, 0.86, 0.6, 0.86, 0.6], vertical_align='bottom')
     try:
-        instrument.voltage = g.number_input("Voltage", key="voltage", format="%0.3f", on_change=refresh, step=properties['voltLvl']['step']/st.session_state['voltage_scaling'], min_value=properties['voltLvl']['min']/st.session_state['voltage_scaling'], max_value=properties['voltLvl']['max']/st.session_state['voltage_scaling'], format=properties['voltLvl']['format']) * st.session_state['voltage_scaling']
+        instrument.voltage = g.number_input("Voltage", key="voltage", on_change=refresh, step=properties['voltLvl']['step']/st.session_state['voltage_scaling'], min_value=properties['voltLvl']['min']/st.session_state['voltage_scaling'], max_value=properties['voltLvl']['max']/st.session_state['voltage_scaling'], format=properties['voltLvl']['format']) * st.session_state['voltage_scaling']
         g.write(st.session_state['voltage_units'])
-        instrument.frequency = g.number_input("Frequency", key="frequency", format="%0.3f", on_change=refresh, step=properties['freq']['step']/st.session_state['frequency_scaling'], min_value=properties['freq']['min']/st.session_state['frequency_scaling'], max_value=properties['freq']['max']/st.session_state['frequency_scaling'], format=properties['freq']['format']) * st.session_state['frequency_scaling']
+        instrument.frequency = g.number_input("Frequency", key="frequency", on_change=refresh, step=properties['freq']['step']/st.session_state['frequency_scaling'], min_value=properties['freq']['min']/st.session_state['frequency_scaling'], max_value=properties['freq']['max']/st.session_state['frequency_scaling'], format=properties['freq']['format']) * st.session_state['frequency_scaling']
         g.write(st.session_state['frequency_units'])
         instrument.nPrim = g.number_input("nPrim", key="nPrim", on_change=refresh, step=1, min_value=properties['nPrim']['min'], max_value=properties['nPrim']['max'])
         g.write(st.session_state['nPrim_units'])
