@@ -335,10 +335,187 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     except Exception as e:
         error(f"<summary>Failed to fetch the configuration from the instrument</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
 
-    g = grid([6, 1.8, 1.8], vertical_align='center')
+    g = grid([6, 1.4, 1.4, 1.4], vertical_align='center')
 
     g.title("Coupling Measurements")
-    if g.button("Run", args=(), key="measure_button"):
+
+    def format_with_units(value, units):
+        if isinstance(value, str):
+            return value
+        value, units, _ = replace_prefix(value, units)
+        return f"{value:.3f} {units}"
+    
+    def special_format(value, percent=False):
+        if isinstance(value, str) or isinstance(value, int):
+            return value
+        if percent:
+            return f"{value * 100:.3f} %"
+        return f"{value:.3f}"
+    try:
+        data = {
+            'voltage': format_with_units(instrument.channels[st.session_state['history']].voltage, properties['voltLvl']['units']),
+            'frequency': format_with_units(instrument.channels[st.session_state['history']].frequency, properties['freq']['units']),
+            'L1': format_with_units(instrument.channels[st.session_state['history']].L1, properties['L1']['units']),
+            'L2': format_with_units(instrument.channels[st.session_state['history']].L2, properties['L2']['units']),
+            'k': special_format(instrument.channels[st.session_state['history']].k, percent=True),
+            'k1': special_format(instrument.channels[st.session_state['history']].k1, percent=True),
+            'k2': special_format(instrument.channels[st.session_state['history']].k2, percent=True),
+            'v1_prim': format_with_units(instrument.channels[st.session_state['history']].v1_prim, properties['v1_prim']['units']),
+            'v2_prim': format_with_units(instrument.channels[st.session_state['history']].v2_prim, properties['v2_prim']['units']),
+            'v1_sec': format_with_units(instrument.channels[st.session_state['history']].v1_sec, properties['v1_sec']['units']),
+            'v2_sec': format_with_units(instrument.channels[st.session_state['history']].v2_sec, properties['v2_sec']['units']),
+            'Ls1_prim': format_with_units(instrument.channels[st.session_state['history']].Ls1_prim, properties['Ls1_prim']['units']),
+            'Lm': format_with_units(instrument.channels[st.session_state['history']].Lm, properties['Lm']['units']),
+            'Ls2_prim': format_with_units(instrument.channels[st.session_state['history']].Ls2_prim, properties['Ls2_prim']['units']),
+            'nPrim': special_format(instrument.channels[st.session_state['history']].nPrim),
+            'nSec': special_format(instrument.channels[st.session_state['history']].nSec),
+            'Ls': format_with_units(instrument.channels[st.session_state['history']].Ls, properties['Ls']['units']),
+            'Lp': format_with_units(instrument.channels[st.session_state['history']].Lp, properties['Lp']['units']),
+            'N': special_format(instrument.channels[st.session_state['history']].N),
+        }
+    except Exception as e:
+        error(f"<summary>Failed to connect to and fetch the measurement data</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
+
+    
+    import schemdraw
+    import schemdraw.elements as elm
+    
+    from io import BytesIO
+    
+    def to_bytes(diagram):
+        buf = BytesIO()
+        diagram.save(buf, dpi=200)
+        buf.seek(0)
+        return buf
+        
+    def render(diagram):
+        buf = to_bytes(diagram)
+        
+        _, i, _ = st.columns([1, 2.4, 1], vertical_alignment='center')
+        i.image(buf, use_container_width=True)
+        
+    def t_model(data, display=True, flip=False):
+        
+        def flip_element(element, invert=True):
+            if not invert:
+                element.left().flip()
+            else:
+                element.right()
+        
+        def adjust_value(value):
+            if flip:
+                try:
+                    v, u = value.split(' ')
+                    v, u, _ = replace_prefix(float(v) * (float(data['nPrim']) / float(data['nSec'])) ** 2, u)
+                    return f"{v:.3f} {u}"
+                except Exception:
+                    pass
+            return value
+        with schemdraw.Drawing(show=False) as d:
+            t = elm.xform.Transformer().label(f'{data["nPrim"]} : {data["nSec"]}', fontsize=10, ofst=[0, 0.6])
+            if flip:
+                t.reverse()
+            
+            p1 = elm.Line().up().at(t.p1).length(0.5)
+            p2 = elm.Line().down().at(t.p2).length(0.5)
+            s1 = elm.Line().up().at(t.s1).length(0.5)
+            s2 = elm.Line().down().at(t.s2).length(0.5)
+
+            l2 = elm.Inductor2().at(p1.end).label(adjust_value(data['Ls1_prim'] if flip else data['Ls2_prim']), fontsize=10)
+            flip_element(l2, invert=flip)
+            l1 = elm.Inductor2().at(l2.end).label(adjust_value(data['Ls2_prim'] if flip else data['Ls1_prim']), fontsize=10)
+            flip_element(l1, invert=flip)
+
+            w2 = elm.Line().at(p2.end)
+            flip_element(w2, invert=flip)
+            w1 = elm.Line().at(w2.end)
+            flip_element(w1, invert=flip)
+            
+            lm = elm.Inductor2().down().at(l2.end).to(w2.end).flip().label(data['Lm'], fontsize=10)
+            
+            c1 = elm.Line().at(s1.end).length(2)
+            flip_element(c1, invert=not flip)
+            c2 = elm.Line().at(s2.end).length(2)
+            flip_element(c2, invert=not flip)
+            
+            g = elm.Gap(label=[f"$k={data['k']}$", f"$k_1={data['k1']}$", f"$k_2={data['k2']}$"], fontsize=10, lblofst=[0, 0.5 if flip else -0.5]).at(c1.end).to(c2.end)
+        if display:
+            render(d)
+        else:
+            return to_bytes(d)
+            
+    def gamma_model(data, display=True):
+        with schemdraw.Drawing(show=False) as d:
+            t = elm.xform.Transformer().label(f'{1} : {data["N"]}' if data["N"] else ":", fontsize=10)
+            
+            p1 = elm.Line().up().at(t.p1).length(0.5)
+            p2 = elm.Line().down().at(t.p2).length(0.5)
+            s1 = elm.Line().up().at(t.s1).length(0.5)
+            s2 = elm.Line().down().at(t.s2).length(0.5)
+            
+            w3 = elm.Line().left().at(p1.end).length(2)
+            ls = elm.Inductor2().left().at(w3.end).flip().label(data['Ls'], fontsize=10)
+
+            w2 = elm.Line().left().at(p2.end).length(2)
+            w1 = elm.Line().left().at(w2.end)
+            
+            lp = elm.Inductor2().down().at(w3.end).to(w2.end).flip().label(data['Lp'], fontsize=10)
+            
+            c1 = elm.Line().right().at(s1.end).length(2)
+            c2 = elm.Line().right().at(s2.end).length(2)
+            
+            g = elm.Gap(label=[f"$k={data['k']}$", f"$k_1={data['k1']}$", f"$k_2={data['k2']}$"], fontsize=10, lblofst=[0, -0.5]).at(c1.end).to(c2.end)
+        if display:
+            render(d)
+        else:
+            return to_bytes(d)
+    
+    def generate_data():
+        from reportlab.lib.pagesizes import letter
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.utils import ImageReader
+        from reportlab.platypus import Table, TableStyle
+        from reportlab.lib import colors
+        
+        output = BytesIO()
+        
+        c = canvas.Canvas(output, pagesize=letter)
+        width, height = letter
+        
+        table_data = [["Parameter", "Value"]]
+        for key, value in data.items():
+            table_data.append([key, value])
+        
+        table = Table(table_data)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (0, -1), 'CENTER'), # Center align the first column
+            ('ALIGN', (1, 0), (1, -1), 'LEFT'), # Left align the second column
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            # ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            # ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            # ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ]))
+        
+        table.wrapOn(c, width, height)
+        table.drawOn(c, 40, height - 400)
+        
+        h = height - 200
+        for image in [t_model(data, display=False), t_model(data, display=False, flip=True), gamma_model(data, display=False)]:
+            img = ImageReader(image)
+            c.drawImage(img, 200, h, 300, 150)
+            h -= 200
+        
+        c.showPage()
+        c.save()
+        
+        output.seek(0)
+        return output.getvalue()
+        
+    g.download_button("Export", data=generate_data(), file_name="coupling_measurement.pdf", key="export_button", use_container_width=True)
+
+    if g.button("Run", args=(), key="measure_button", use_container_width=True):
         try:
             with st.spinner("Waiting for measurement to complete...", show_time=True):
                 instrument.measure()
@@ -347,7 +524,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         except Exception as e:
             error(f"<summary>Failed to connect to and perform a measurement on the instrument</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
 
-    if g.button("Reset", args=(), key="reset_button"):
+    if g.button("Reset", args=(), key="reset_button", use_container_width=True):
         try:
             instrument.reset()
             fetch()
@@ -425,100 +602,6 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         st.rerun()
 
     n = st.session_state["n"]
-    def format_with_units(value, units):
-        if isinstance(value, str):
-            return value
-        value, units, _ = replace_prefix(value, units)
-        return f"{value:.3f} {units}"
-    
-    def special_format(value, percent=False):
-        if isinstance(value, str) or isinstance(value, int):
-            return value
-        if percent:
-            return f"{value * 100:.3f} %"
-        return f"{value:.3f}"
-    try:
-        data = {
-            'voltage': format_with_units(instrument.channels[st.session_state['history']].voltage, properties['voltLvl']['units']),
-            'frequency': format_with_units(instrument.channels[st.session_state['history']].frequency, properties['freq']['units']),
-            'L1': format_with_units(instrument.channels[st.session_state['history']].L1, properties['L1']['units']),
-            'L2': format_with_units(instrument.channels[st.session_state['history']].L2, properties['L2']['units']),
-            'k': special_format(instrument.channels[st.session_state['history']].k, percent=True),
-            'k1': special_format(instrument.channels[st.session_state['history']].k1, percent=True),
-            'k2': special_format(instrument.channels[st.session_state['history']].k2, percent=True),
-            'v1_prim': format_with_units(instrument.channels[st.session_state['history']].v1_prim, properties['v1_prim']['units']),
-            'v2_prim': format_with_units(instrument.channels[st.session_state['history']].v2_prim, properties['v2_prim']['units']),
-            'v1_sec': format_with_units(instrument.channels[st.session_state['history']].v1_sec, properties['v1_sec']['units']),
-            'v2_sec': format_with_units(instrument.channels[st.session_state['history']].v2_sec, properties['v2_sec']['units']),
-            'Ls1_prim': format_with_units(instrument.channels[st.session_state['history']].Ls1_prim, properties['Ls1_prim']['units']),
-            'Lm': format_with_units(instrument.channels[st.session_state['history']].Lm, properties['Lm']['units']),
-            'Ls2_prim': format_with_units(instrument.channels[st.session_state['history']].Ls2_prim, properties['Ls2_prim']['units']),
-            'nPrim': special_format(instrument.channels[st.session_state['history']].nPrim),
-            'nSec': special_format(instrument.channels[st.session_state['history']].nSec),
-            'Ls': format_with_units(instrument.channels[st.session_state['history']].Ls, properties['Ls']['units']),
-            'Lp': format_with_units(instrument.channels[st.session_state['history']].Lp, properties['Lp']['units']),
-            'N': special_format(instrument.channels[st.session_state['history']].N),
-        }
-    except Exception as e:
-        error(f"<summary>Failed to connect to and fetch the measurement data</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
-
-    
-    import schemdraw
-    import schemdraw.elements as elm
-    
-    from io import BytesIO
-    
-    def render(diagram):
-        buf = BytesIO()
-        diagram.save(buf, dpi=200)
-        buf.seek(0)
-        
-        _, i, _ = st.columns([1, 2.4, 1], vertical_alignment='center')
-        i.image(buf, use_container_width=True)
-        
-    def t_model(data):
-        with schemdraw.Drawing(show=False) as d:
-            t = elm.xform.Transformer().label(f'{data["nPrim"]} : {data["nSec"]}', fontsize=10)
-            
-            p1 = elm.Line().up().at(t.p1).length(0.5)
-            p2 = elm.Line().down().at(t.p2).length(0.5)
-            s1 = elm.Line().up().at(t.s1).length(0.5)
-            s2 = elm.Line().down().at(t.s2).length(0.5)
-
-            l2 = elm.Inductor2().left().at(p1.end).flip().label(data['Ls2_prim'], fontsize=10)
-            l1 = elm.Inductor2().left().at(l2.end).flip().label(data['Ls1_prim'], fontsize=10)
-
-            w2 = elm.Line().left().at(p2.end)
-            w1 = elm.Line().left().at(w2.end)
-            
-            lm = elm.Inductor2().down().at(l2.end).to(w2.end).flip().label(data['Lm'], fontsize=10)
-            
-            elm.Line().right().at(s1.end).length(2)
-            elm.Line().right().at(s2.end).length(2)
-            
-        render(d)
-            
-    def gamma_model(data):
-        with schemdraw.Drawing(show=False) as d:
-            t = elm.xform.Transformer().label(f'{1} : {data["N"]}' if data["N"] else ":", fontsize=10)
-            
-            p1 = elm.Line().up().at(t.p1).length(0.5)
-            p2 = elm.Line().down().at(t.p2).length(0.5)
-            s1 = elm.Line().up().at(t.s1).length(0.5)
-            s2 = elm.Line().down().at(t.s2).length(0.5)
-            
-            w3 = elm.Line().left().at(p1.end).length(2)
-            ls = elm.Inductor2().left().at(w3.end).flip().label(data['Ls'], fontsize=10)
-
-            w2 = elm.Line().left().at(p2.end).length(2)
-            w1 = elm.Line().left().at(w2.end)
-            
-            lp = elm.Inductor2().down().at(w3.end).to(w2.end).flip().label(data['Lp'], fontsize=10)
-            
-            elm.Line().right().at(s1.end).length(2)
-            elm.Line().right().at(s2.end).length(2)
-
-        render(d)
         
     try:
 
@@ -526,6 +609,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             st.table(data)
         elif n == "T-Model":
             t_model(data)
+            t_model(data, flip=True)
         elif n == "Gamma-Model":
             gamma_model(data)
         check_server_errors()
