@@ -7,8 +7,8 @@ import sys
 
 
 if __name__ == "__main__":
-    with open(os.path.join(os.path.dirname(__file__), "config.yaml"), 'r') as file:
-        config = yaml.safe_load(file)
+    from utils import *
+    config = read_config()
 
     process = subprocess.Popen(
         [sys.executable, "-m", "streamlit", "run", os.path.join(os.path.dirname(__file__), "GUI.py"), f"--server.headless={config['client']['windowMode']}", "streamlit"],

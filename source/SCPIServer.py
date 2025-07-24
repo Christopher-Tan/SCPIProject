@@ -10,10 +10,8 @@ from CouplingMeasurement import Measurements
 from SCPIParser import SCPIParser
 from copy import copy
 
-import os
-import yaml
-with open(os.path.join(os.path.dirname(__file__), "config.yaml"), 'r') as file:
-    config = yaml.safe_load(file)
+from utils import *
+config = read_config()
 
 import traceback
 from pyvisa import VisaIOError
@@ -89,6 +87,11 @@ if __name__ == "__main__":
                     new_measurement.measure()
                     measurement_list.append(copy(new_measurement))
                     
+                def set_config(config_str):
+                    global config
+                    apply(config, config_str)
+                    write_config(config)
+                    
                 parser = SCPIParser({
                     ":MEASure:HISTory:COUPling:K?": lambda measurement=0: measurements[measurement].k,
                     ":MEASure:HISTory:COUPling:K1?": lambda measurement=0: measurements[measurement].k1,
@@ -125,6 +128,9 @@ if __name__ == "__main__":
                     "*IDN?": lambda: "Raspberry Pi",
                     "*RST": new_measurement.__init__,
                     ":SYSTem:ERRor?": lambda: errors.popleft() if errors else "0,No error",
+                    
+                    ":CONFig": set_config,
+                    ":CONFig?": lambda: shared_configs(read_config()),
                 })
                 while True:
                     data = conn.recv(1024)

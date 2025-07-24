@@ -1,10 +1,9 @@
 from pymeasure.instruments import Instrument, Channel
 
-import os
-import yaml
 from pymeasure.instruments.validators import strict_range
-with open(os.path.join(os.path.dirname(__file__), "..", "config.yaml"), 'r') as file:
-    config = yaml.safe_load(file)
+
+from utils import *
+config = read_config()
 
 class CouplingMeasurement(Channel):
     """A class to represent a single coupling measurement.

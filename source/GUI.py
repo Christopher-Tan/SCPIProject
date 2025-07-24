@@ -9,20 +9,12 @@ import os
 
 import traceback
 
-def read_config():
-    global config
-    with open(os.path.join(os.path.dirname(__file__), "config.yaml"), 'r') as file:
-        config = yaml.safe_load(file)
-
-read_config()
+from utils import *
+config = read_config()
 
 ip = config["server"]['_IP']
 port = config["server"]['port']
 properties = config['properties']
-
-def write_config():
-    with open(os.path.join(os.path.dirname(__file__), "config.yaml"), 'w') as file:
-        yaml.dump(config, file, default_flow_style=False)
 
 if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     import streamlit as st
@@ -187,7 +179,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             global config
             config = nested_dict_to_form(config)
             if st.form_submit_button("Save"):
-                write_config()
+                write_config(config)
                 st.session_state["refresh_before"] = True
                 st.rerun()
         st.stop()
@@ -536,7 +528,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             st.session_state['history'] = v
             st.rerun()
     
-    write_config()
+    write_config(config)
 
     from streamlit_autorefresh import st_autorefresh
     st_autorefresh(4000)
