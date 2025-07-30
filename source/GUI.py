@@ -317,6 +317,20 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     def update_connections():
         global dmm1, dmm2, lcr
         dmm1, dmm2, lcr = instrument.dmm1, instrument.dmm2, instrument.lcr
+    update_connections()
+    
+    def color(tag, value):
+        if value == "True":
+            c = "background-color: #88E788;"
+        elif value == "False":
+            c = "background-color: #FF7F7F;"
+        else:
+            c = "display: none !important;"
+        st.markdown(f"<style>.{tag} {{display: block !important; {c}}}</style>")
+    
+    color("dmm1", dmm1)
+    color("dmm2", dmm2)
+    color("lcr", lcr)
     
     if "conf" in st.session_state:
         config = st.session_state["conf"]
