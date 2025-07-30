@@ -382,28 +382,31 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         if percent:
             return f"{value * 100:.3f} %"
         return f"{value:.3f}"
-    try:
+    
+    def get_data(number):
         data = {
-            'voltage': format_with_units(instrument.channels[st.session_state['history']].voltage, properties['voltLvl']['units']),
-            'frequency': format_with_units(instrument.channels[st.session_state['history']].frequency, properties['freq']['units']),
-            'L1': format_with_units(instrument.channels[st.session_state['history']].L1, properties['L1']['units']),
-            'L2': format_with_units(instrument.channels[st.session_state['history']].L2, properties['L2']['units']),
-            'k': special_format(instrument.channels[st.session_state['history']].k, percent=True),
-            'k1': special_format(instrument.channels[st.session_state['history']].k1, percent=True),
-            'k2': special_format(instrument.channels[st.session_state['history']].k2, percent=True),
-            'v1_prim': format_with_units(instrument.channels[st.session_state['history']].v1_prim, properties['v1_prim']['units']),
-            'v2_prim': format_with_units(instrument.channels[st.session_state['history']].v2_prim, properties['v2_prim']['units']),
-            'v1_sec': format_with_units(instrument.channels[st.session_state['history']].v1_sec, properties['v1_sec']['units']),
-            'v2_sec': format_with_units(instrument.channels[st.session_state['history']].v2_sec, properties['v2_sec']['units']),
-            'Ls1_prim': format_with_units(instrument.channels[st.session_state['history']].Ls1_prim, properties['Ls1_prim']['units']),
-            'Lm': format_with_units(instrument.channels[st.session_state['history']].Lm, properties['Lm']['units']),
-            'Ls2_prim': format_with_units(instrument.channels[st.session_state['history']].Ls2_prim, properties['Ls2_prim']['units']),
-            'nPrim': special_format(instrument.channels[st.session_state['history']].nPrim),
-            'nSec': special_format(instrument.channels[st.session_state['history']].nSec),
-            'Ls': format_with_units(instrument.channels[st.session_state['history']].Ls, properties['Ls']['units']),
-            'Lp': format_with_units(instrument.channels[st.session_state['history']].Lp, properties['Lp']['units']),
-            'N': special_format(instrument.channels[st.session_state['history']].N),
+            'voltage': format_with_units(instrument.channels[number].voltage, properties['voltLvl']['units']),
+            'frequency': format_with_units(instrument.channels[number].frequency, properties['freq']['units']),
+            'L1': format_with_units(instrument.channels[number].L1, properties['L1']['units']),
+            'L2': format_with_units(instrument.channels[number].L2, properties['L2']['units']),
+            'k': special_format(instrument.channels[number].k, percent=True),
+            'k1': special_format(instrument.channels[number].k1, percent=True),
+            'k2': special_format(instrument.channels[number].k2, percent=True),
+            'v1_prim': format_with_units(instrument.channels[number].v1_prim, properties['v1_prim']['units']),
+            'v2_prim': format_with_units(instrument.channels[number].v2_prim, properties['v2_prim']['units']),
+            'v1_sec': format_with_units(instrument.channels[number].v1_sec, properties['v1_sec']['units']),
+            'v2_sec': format_with_units(instrument.channels[number].v2_sec, properties['v2_sec']['units']),
+            'Ls1_prim': format_with_units(instrument.channels[number].Ls1_prim, properties['Ls1_prim']['units']),
+            'Lm': format_with_units(instrument.channels[number].Lm, properties['Lm']['units']),
+            'Ls2_prim': format_with_units(instrument.channels[number].Ls2_prim, properties['Ls2_prim']['units']),
+            'nPrim': special_format(instrument.channels[number].nPrim),
+            'nSec': special_format(instrument.channels[number].nSec),
+            'Ls': format_with_units(instrument.channels[number].Ls, properties['Ls']['units']),
+            'Lp': format_with_units(instrument.channels[number].Lp, properties['Lp']['units']),
+            'N': special_format(instrument.channels[number].N),
         }
+    try:
+
     except Exception as e:
         error(f"<summary>Failed to connect to and fetch the measurement data</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
 
