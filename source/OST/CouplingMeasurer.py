@@ -92,12 +92,14 @@ class CouplingMeasurement(Channel):
     
     nPrim = Channel.measurement(
         "MEASure:HISTory:COUPling:NPRIMary? {ch}",
-        """A property that returns the number of primary turns."""
+        """A property that returns the number of primary turns.""",
+        cast=int
     )
     
     nSec = Channel.measurement(
         "MEASure:HISTory:COUPling:NSECondary? {ch}",
-        """A property that returns the number of secondary turns."""
+        """A property that returns the number of secondary turns.""",
+        cast=int
     )
     
     L1 = Channel.measurement(
@@ -108,6 +110,10 @@ class CouplingMeasurement(Channel):
     L2 = Channel.measurement(
         "MEASure:HISTory:COUPling:L2? {ch}",
         """A property that returns the inductance of the secondary winding L2."""
+    )
+    time = Channel.measurement(
+        "MEASure:HISTory:COUPling:TIME? {ch}",
+        """A property that returns the time of the measurement."""
     )
 
 class CouplingMeasurer(Instrument):
@@ -126,6 +132,8 @@ class CouplingMeasurer(Instrument):
         super().__init__(
             adapter,
             name,
+            read_termination="\n",
+            write_termination="\n",
             **kwargs
         )
         
@@ -189,4 +197,17 @@ class CouplingMeasurer(Instrument):
         """A property that controls the configuration of the instrument.
         The configuration is a string representation of the current settings.
         """
+    )
+    
+    dmm1 = Instrument.measurement(
+        ":DMM1?",
+        """A property that returns whether DMM1 is connected or not.""",
+    )
+    dmm2 = Instrument.measurement(
+        ":DMM2?",
+        """A property that returns whether DMM2 is connected or not.""",
+    )
+    lcr = Instrument.measurement(
+        ":LCR?",
+        """A property that returns whether LCR is connected or not.""",
     )

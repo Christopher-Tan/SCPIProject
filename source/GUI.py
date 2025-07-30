@@ -200,6 +200,35 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         if c.button("⚙️", key="config", use_container_width=True):
             configure()
             
+    if 'history' not in st.session_state:
+        st.session_state['history'] = 0
+        st.session_state['max_history'] = 0
+    def fetch_history():
+        if instrument:
+            try:
+                nn = int(instrument.n)
+                if nn != st.session_state['max_history']:
+                    st.session_state['history'] = nn
+                    st.session_state['max_history'] = nn
+                instrument.update_children()
+            except (ValueError, TypeError): # a connection to the instrument is still present, but the results are lagging in their buffer
+                pass
+            except:
+                raise
+
+    def fetch(local=False):
+        if instrument:
+            st.session_state['voltage'], st.session_state['voltage_units'], st.session_state['voltage_scaling'] = replace_prefix(((st.session_state['persist_voltage'] * st.session_state['voltage_scaling']) if local else instrument.voltage), properties['voltLvl']['units'])
+            st.session_state['frequency'], st.session_state['frequency_units'], st.session_state['frequency_scaling'] = replace_prefix(((st.session_state['persist_frequency'] * st.session_state['frequency_scaling']) if local else instrument.frequency), properties['freq']['units'])
+            st.session_state['nPrim'], st.session_state['nPrim_units'] = replace_suffix((st.session_state['persist_nPrim'] if local else instrument.nPrim), properties['nPrim']['units'])
+            st.session_state['nSec'], st.session_state['nSec_units'] = replace_suffix((st.session_state['persist_nSec'] if local else instrument.nSec), properties['nSec']['units'])
+            if not local:
+                st.session_state['persist_voltage'] = st.session_state['voltage']
+                st.session_state['persist_frequency'] = st.session_state['frequency']
+                st.session_state['persist_nPrim'] = st.session_state['nPrim']
+                st.session_state['persist_nSec'] = st.session_state['nSec']
+                fetch_history()
+
     metric_prefixes = {
         'y': 1e-24, 
         'z': 1e-21,
@@ -253,36 +282,13 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         return value, units
     
     st.set_page_config(page_title="Coupling Measurements", layout="wide")
-        
-    if 'history' not in st.session_state:
-        st.session_state['history'] = 0
-        st.session_state['max_history'] = 0
-    def fetch_history():
-        if instrument:
-            try:
-                nn = int(instrument.n)
-                if nn != st.session_state['max_history']:
-                    st.session_state['history'] = nn
-                    st.session_state['max_history'] = nn
-                instrument.update_children()
-            except (ValueError, TypeError): # a connection to the instrument is still present, but the results are lagging in their buffer
-                pass
-            except:
-                raise
-
-    def fetch():
-        if instrument:
-            st.session_state['voltage'], st.session_state['voltage_units'], st.session_state['voltage_scaling'] = replace_prefix(instrument.voltage, properties['voltLvl']['units'])
-            st.session_state['frequency'], st.session_state['frequency_units'], st.session_state['frequency_scaling'] = replace_prefix(instrument.frequency, properties['freq']['units'])
-            st.session_state['nPrim'], st.session_state['nPrim_units'] = replace_suffix(instrument.nPrim, properties['nPrim']['units'])
-            st.session_state['nSec'], st.session_state['nSec_units'] = replace_suffix(instrument.nSec, properties['nSec']['units'])
-            fetch_history()
-            
+                    
     from OST import CouplingMeasurer
     if 'instrument' not in st.session_state:
         try:
             with st.spinner("Connecting...", show_time=True):
-                instrument = CouplingMeasurer(f"TCPIP::{ip}::{port}::SOCKET", read_termination="\n", write_termination="\n", timeout=10000)
+                instrument = CouplingMeasurer(f"TCPIP::{ip}::{port}::SOCKET", timeout=10000)
+                st.cache_data.clear()
             st.session_state['instrument'] = instrument
             fetch()
             st.toast(f"Connected to {instrument.id}.")
@@ -301,6 +307,11 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             instrument = None
             error(f"<summary>Failed to maintain connection to the instrument, likely server crash</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
 
+    dmm1, dmm2, lcr = '', '', ''
+    def update_connections():
+        global dmm1, dmm2, lcr
+        dmm1, dmm2, lcr = instrument.dmm1, instrument.dmm2, instrument.lcr
+    
     if "conf" in st.session_state:
         config = st.session_state["conf"]
         st.session_state.pop("conf", None)

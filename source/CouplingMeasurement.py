@@ -11,6 +11,8 @@ import numpy as np
 import yaml
 import os
 
+from datetime import datetime
+
 try:
     import lgpio
 except ImportError:
@@ -49,6 +51,7 @@ class Measurements:
         self.v2_sec = ''
         self.L1 = ''
         self.L2 = ''
+        self.time = ''
         
     def __str__(self):
         """Return a string representation of the measurements."""
@@ -62,6 +65,7 @@ class Measurements:
         for key, value in measurements.items():
             if hasattr(self, key):
                 setattr(self, key, value)
+        self.time = str(datetime.now())
 
     def __copy__(self):
         """Create a copy of the measurements."""
