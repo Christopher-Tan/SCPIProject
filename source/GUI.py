@@ -191,7 +191,13 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             background-color: transparent;
         }
     """):
-        _, r, c = st.columns([8, 1, 1])
+        s, _, r, c = st.columns([3.6, 6, 1, 1], vertical_alignment='center')
+        
+        s1, s2, s3 = s.columns(3)
+        
+        s1.markdown('<p class="dmm1" style="display: none; border-radius: 6px; text-align: center;">DMM1</p>', unsafe_allow_html=True)
+        s2.markdown('<p class="dmm2" style="display: none; border-radius: 6px; text-align: center;">DMM2</p>', unsafe_allow_html=True)
+        s3.markdown('<p class="lcr" style="display: none; border-radius: 6px; text-align: center;">LCR</p>', unsafe_allow_html=True)
         
         if r.button("↻", key="rerun", use_container_width=True):
             st.session_state["refresh_before"] = True
