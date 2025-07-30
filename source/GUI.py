@@ -380,11 +380,12 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         if isinstance(value, str) or isinstance(value, int):
             return value
         if percent:
-            return f"{value * 100:.3f} %"
+            return f"{value * 100:.1f} %"
         return f"{value:.3f}"
     
+    @st.cache_data
     def get_data(number):
-        data = {
+        return {
             'voltage': format_with_units(instrument.channels[number].voltage, properties['voltLvl']['units']),
             'frequency': format_with_units(instrument.channels[number].frequency, properties['freq']['units']),
             'L1': format_with_units(instrument.channels[number].L1, properties['L1']['units']),
@@ -406,7 +407,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             'N': special_format(instrument.channels[number].N),
         }
     try:
-
+        data = get_data(st.session_state['history'])
     except Exception as e:
         error(f"<summary>Failed to connect to and fetch the measurement data</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
 
@@ -422,13 +423,11 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         buf.seek(0)
         return buf
         
-    def render(diagram):
-        buf = to_bytes(diagram)
-        
+    def render(buf):
         _, i, _ = st.columns([1, 2.4, 1], vertical_alignment='center')
         i.image(buf, use_container_width=True)
         
-    def t_model(data, display=True, flip=False):
+    def t_model(data, flip=False):
         
         def flip_element(element, invert=True):
             if not invert:
@@ -440,7 +439,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             if flip:
                 try:
                     v, u = value.split(' ')
-                    v, u, _ = replace_prefix(float(v) * (float(data['nPrim']) / float(data['nSec'])) ** 2, u)
+                    v, u, _ = replace_prefix(float(v) * (float(data['nSec']) / float(data['nPrim'])) ** 2, u)
                     return f"{v:.3f} {u}"
                 except Exception:
                     pass
@@ -465,20 +464,18 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             w1 = elm.Line().at(w2.end)
             flip_element(w1, invert=flip)
             
-            lm = elm.Inductor2().down().at(l2.end).to(w2.end).flip().label(data['Lm'], fontsize=10)
+            lm = elm.Inductor2().down().at(l2.end).to(w2.end).flip().label(adjust_value(data['Lm']), fontsize=10)
             
             c1 = elm.Line().at(s1.end).length(2)
             flip_element(c1, invert=not flip)
             c2 = elm.Line().at(s2.end).length(2)
             flip_element(c2, invert=not flip)
             
-            g = elm.Gap(label=[f"$k={data['k']}$", f"$k_1={data['k1']}$", f"$k_2={data['k2']}$"], fontsize=10, lblofst=[0, 0.5 if flip else -0.5]).at(c1.end).to(c2.end)
-        if display:
-            render(d)
-        else:
-            return to_bytes(d)
+            g = elm.Gap(label=[f"$k=${data['k']}", f"$k_1=${data['k1']}", f"$k_2=${data['k2']}"], fontsize=10, lblofst=[0, 0.5 if flip else -0.5]).at(c1.end).to(c2.end)
+
+        return to_bytes(d)
             
-    def gamma_model(data, display=True):
+    def gamma_model(data):
         with schemdraw.Drawing(show=False) as d:
             t = elm.xform.Transformer().label(f'{1} : {data["N"]}' if data["N"] else ":", fontsize=10)
             
