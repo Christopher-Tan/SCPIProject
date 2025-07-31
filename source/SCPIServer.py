@@ -10,11 +10,18 @@ from CouplingMeasurement import Measurements
 from SCPIParser import SCPIParser
 from copy import copy
 
+from pymeasure.instruments.agilent import Agilent34465A
+#from pymeasure.instruments.rohdeschwarz import HMP4030
+from pymeasure.instruments.rohdeschwarz import Hmc804X
+from pymeasure.instruments.keysight import KeysightE4980AL
+
 from utils import *
 config = read_config()
 
 import traceback
 from pyvisa import VisaIOError
+
+import time
 
 if __name__ == "__main__":
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -74,6 +81,35 @@ if __name__ == "__main__":
     measurement_list = UpdatingList()
     
     from collections import deque
+    
+    dmm1, dmm2, lcr = False, False, False
+    
+    def update_status():
+        config = read_config()
+        global dmm1, dmm2, lcr
+        
+        try:
+            Agilent34465A(config['measurement_devices']['_DMM1'])
+            dmm1 = True
+        except Exception as e:
+            dmm1 = False
+        try:
+            Agilent34465A(config['measurement_devices']['_DMM2'])
+            dmm2 = True
+        except Exception as e:
+            dmm2 = False
+        try:
+            KeysightE4980AL(config['measurement_devices']['_LCR'])
+            lcr = True
+        except Exception as e:
+            lcr = False
+            
+    def check_devices():
+        while True:
+            update_status()
+            time.sleep(2)
+    
+    threading.Thread(target=check_devices, daemon=True).start()
 
     def handle_client(conn):
         errors = deque(maxlen=10)
@@ -91,6 +127,7 @@ if __name__ == "__main__":
                     global config
                     apply(config, config_str)
                     write_config(config)
+                    update_status()
                     
                 parser = SCPIParser({
                     ":MEASure:HISTory:COUPling:K?": lambda measurement=0: measurements[measurement].k,
@@ -113,6 +150,7 @@ if __name__ == "__main__":
                     ":MEASure:HISTory:COUPling:L1?": lambda measurement=0: measurements[measurement].L1,
                     ":MEASure:HISTory:COUPling:L2?": lambda measurement=0: measurements[measurement].L2,
                     ":MEASure:HISTory:COUPling?": lambda measurement=0: measurements[measurement],
+                    ":MEASure:HISTory:COUPling:TIME?": lambda measurement=0: measurements[measurement].time,
                     
                     ":MEASure[:COUPling]": measure,
                     ":MEASure:COUPling:FREQuency": lambda freq: setattr(new_measurement, 'freq', float(freq)) if (config['properties']['freq']['min'] is None or float(freq) >= config['properties']['freq']['min']) and (config['properties']['freq']['max'] is None or float(freq) <= config['properties']['freq']['max']) else errors.append(f"Frequency {freq} out of range"),
@@ -131,9 +169,13 @@ if __name__ == "__main__":
                     
                     ":CONFig": set_config,
                     ":CONFig?": lambda: shared_configs(read_config()),
+                    
+                    ":DMM1?": lambda: dmm1,
+                    ":DMM2?": lambda: dmm2,
+                    ":LCR?": lambda: lcr,
                 })
                 while True:
-                    data = conn.recv(1024)
+                    data = conn.recv(4096)
                     if not data:
                         break
                     data = data.decode()
