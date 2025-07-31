@@ -317,7 +317,6 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     def update_connections():
         global dmm1, dmm2, lcr
         dmm1, dmm2, lcr = instrument.dmm1, instrument.dmm2, instrument.lcr
-    update_connections()
     
     def color(tag, value):
         if value == "True":
@@ -407,6 +406,8 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     except Exception as e:
         error(f"<summary>Failed to connect to and fetch the measurement data</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
 
+    update_connections()
+    
     color("dmm1", dmm1)
     color("dmm2", dmm2)
     color("lcr", lcr)
