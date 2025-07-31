@@ -479,7 +479,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     @st.cache_data
     def gamma_model(data):
         with schemdraw.Drawing(show=False) as d:
-            t = elm.xform.Transformer().label(f'{1} : {data["N"]}' if data["N"] else ":", fontsize=10)
+            t = elm.xform.Transformer().label(f'{1} : {data["N"]}' if data["N"] else ":", fontsize=10, ofst=[0, 0.6])
             
             p1 = elm.Line().up().at(t.p1).length(0.5)
             p2 = elm.Line().down().at(t.p2).length(0.5)
