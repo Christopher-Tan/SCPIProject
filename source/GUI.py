@@ -579,7 +579,7 @@ N: {data['N']}
         output.seek(0)
         return output.getvalue()
         
-    g.download_button("Export", data=generate_data(), file_name="coupling_measurement.pdf", key="export_button", use_container_width=True)
+    g.download_button("Export", data=generate_data(data), file_name="coupling_measurement.pdf", key="export_button", use_container_width=True)
 
     if g.button("Run", args=(), key="measure_button", use_container_width=True):
         update_connections()
@@ -590,7 +590,7 @@ N: {data['N']}
             e.append("DMM2")
         if lcr == "False":
             e.append("LCR")
-        ', '.join(e)
+        e = ', '.join(e)
         
         if e:
             error(f"Cannot perform my measurement, the following instruments are not connected: {e}. Please connect the instruments and try again.")
