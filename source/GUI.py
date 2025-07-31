@@ -326,7 +326,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             c = "background-color: #FF7F7F;"
         else:
             c = "display: none !important;"
-        st.markdown(f"<style>.{tag} {{display: block !important; {c}}}</style>")
+        st.markdown(f"<style>.{tag} {{display: block !important; {c}}}</style>", unsafe_allow_html=True)
     
     color("dmm1", dmm1)
     color("dmm2", dmm2)
@@ -427,6 +427,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         _, i, _ = st.columns([1, 2.4, 1], vertical_alignment='center')
         i.image(buf, use_container_width=True)
         
+    @st.cache_data
     def t_model(data, flip=False):
         
         def flip_element(element, invert=True):
@@ -475,6 +476,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
 
         return to_bytes(d)
             
+    @st.cache_data
     def gamma_model(data):
         with schemdraw.Drawing(show=False) as d:
             t = elm.xform.Transformer().label(f'{1} : {data["N"]}' if data["N"] else ":", fontsize=10)
@@ -496,12 +498,45 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             c2 = elm.Line().right().at(s2.end).length(2)
             
             g = elm.Gap(label=[f"$k={data['k']}$", f"$k_1={data['k1']}$", f"$k_2={data['k2']}$"], fontsize=10, lblofst=[0, -0.5]).at(c1.end).to(c2.end)
-        if display:
-            render(d)
-        else:
-            return to_bytes(d)
+
+        return to_bytes(d)
     
-    def generate_data():
+    @st.cache_data
+    def template(data):
+        return f"""
+**{instrument.channels[st.session_state['history']].time}**  
+  
+**Set values**  
+Voltage: {data['voltage']}  
+Frequency: {data['frequency']}  
+nPrim: {data['nPrim']}  
+nSec: {data['nSec']}  
+  
+**Raw values from measurement**  
+L1: {data['L1']}  
+L2: {data['L2']}  
+k: {data['k']}  
+k1: {data['k1']}  
+k2: {data['k2']}  
+v1_prim: {data['v1_prim']}  
+v2_prim: {data['v2_prim']}  
+v1_sec: {data['v1_sec']}  
+v2_sec: {data['v2_sec']}  
+  
+**Calculated values**  
+*T-model*:  
+Ls1_prim: {data['Ls1_prim']}  
+Ls2_prim: {data['Ls2_prim']}  
+Lm: {data['Lm']}  
+  
+*Gamma model*:  
+Ls: {data['Ls']}  
+Lp: {data['Lp']}  
+N: {data['N']}  
+"""
+        
+    @st.cache_data
+    def generate_data(data):
         from reportlab.lib.pagesizes import letter
         from reportlab.pdfgen import canvas
         from reportlab.lib.utils import ImageReader
@@ -533,10 +568,10 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         table.drawOn(c, 40, height - 400)
         
         h = height - 200
-        for image in [t_model(data, display=False), t_model(data, display=False, flip=True), gamma_model(data, display=False)]:
+        for image in [t_model(data), t_model(data, flip=True), gamma_model(data)]:
             img = ImageReader(image)
             c.drawImage(img, 200, h, 300, 150)
-            h -= 200
+            h -= 150
         
         c.showPage()
         c.save()
@@ -547,6 +582,19 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     g.download_button("Export", data=generate_data(), file_name="coupling_measurement.pdf", key="export_button", use_container_width=True)
 
     if g.button("Run", args=(), key="measure_button", use_container_width=True):
+        update_connections()
+        e = []
+        if dmm1 == "False":
+            e.append("DMM1")
+        if dmm2 == "False":
+            e.append("DMM2")
+        if lcr == "False":
+            e.append("LCR")
+        ', '.join(e)
+        
+        if e:
+            error(f"Cannot perform my measurement, the following instruments are not connected: {e}. Please connect the instruments and try again.")
+        
         try:
             with st.spinner("Waiting for measurement to complete...", show_time=True):
                 instrument.measure()
@@ -574,19 +622,22 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         
     if st.session_state["refresh_before"]:
         st.session_state["refresh_before"] = False
-        fetch()
+        fetch(local=True)
         
     g = grid([0.86, 0.6, 0.86, 0.6, 0.86, 0.6, 0.86, 0.6], vertical_align='bottom')
     try:
         instrument.voltage = g.number_input("Voltage", key="voltage", on_change=refresh, step=properties['voltLvl']['step']/st.session_state['voltage_scaling'], min_value=properties['voltLvl']['min']/st.session_state['voltage_scaling'], max_value=properties['voltLvl']['max']/st.session_state['voltage_scaling'], format=properties['voltLvl']['format']) * st.session_state['voltage_scaling']
         g.write(st.session_state['voltage_units'])
+        st.session_state['persist_voltage'] = st.session_state['voltage']
         instrument.frequency = g.number_input("Frequency", key="frequency", on_change=refresh, step=properties['freq']['step']/st.session_state['frequency_scaling'], min_value=properties['freq']['min']/st.session_state['frequency_scaling'], max_value=properties['freq']['max']/st.session_state['frequency_scaling'], format=properties['freq']['format']) * st.session_state['frequency_scaling']
         g.write(st.session_state['frequency_units'])
+        st.session_state['persist_frequency'] = st.session_state['frequency']
         instrument.nPrim = g.number_input("nPrim", key="nPrim", on_change=refresh, step=1, min_value=properties['nPrim']['min'], max_value=properties['nPrim']['max'])
         g.write(st.session_state['nPrim_units'])
+        st.session_state['persist_nPrim'] = st.session_state['nPrim']
         instrument.nSec = g.number_input("nSec", key="nSec", on_change=refresh, step=1, min_value=properties['nSec']['min'], max_value=properties['nSec']['max'])
         g.write(st.session_state['nSec_units'])
-        
+        st.session_state['persist_nSec'] = st.session_state['nSec']
         if st.session_state["refresh_after"]:
             st.session_state["refresh_after"] = False
             st.session_state["refresh_before"] = True
@@ -637,12 +688,17 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     try:
 
         if n == "Raw Data":
-            st.table(data)
+            with stylable_container("Raw", """
+                .stMarkdown {
+                    text-align: center;
+                }
+            """):
+                st.write(template(data))
         elif n == "T-Model":
-            t_model(data)
-            t_model(data, flip=True)
+            render(t_model(data))
+            render(t_model(data, flip=True))
         elif n == "Gamma-Model":
-            gamma_model(data)
+            render(gamma_model(data))
         check_server_errors()
     except Exception as e:
         pass
