@@ -28,6 +28,8 @@ def stringify(dic, prefix=""):
     return s
 
 def apply(dic, string):
+    if not isinstance(string, str):
+        return #Almost certainly a timing error
     if string.strip():
         for item in string.split(config_separator):
             k, v = item.rsplit(path_separator, 1)
