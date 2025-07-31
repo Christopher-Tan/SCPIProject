@@ -328,10 +328,6 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             c = "display: none !important;"
         st.markdown(f"<style>.{tag} {{display: block !important; {c}}}</style>", unsafe_allow_html=True)
     
-    color("dmm1", dmm1)
-    color("dmm2", dmm2)
-    color("lcr", lcr)
-    
     if "conf" in st.session_state:
         config = st.session_state["conf"]
         st.session_state.pop("conf", None)
@@ -411,6 +407,9 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     except Exception as e:
         error(f"<summary>Failed to connect to and fetch the measurement data</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
 
+    color("dmm1", dmm1)
+    color("dmm2", dmm2)
+    color("lcr", lcr)
     
     import schemdraw
     import schemdraw.elements as elm
