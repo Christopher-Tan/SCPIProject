@@ -497,7 +497,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             c1 = elm.Line().right().at(s1.end).length(2)
             c2 = elm.Line().right().at(s2.end).length(2)
             
-            g = elm.Gap(label=[f"$k={data['k']}$", f"$k_1={data['k1']}$", f"$k_2={data['k2']}$"], fontsize=10, lblofst=[0, -0.5]).at(c1.end).to(c2.end)
+            g = elm.Gap(label=[f"$k=${data['k']}", f"$k_1=${data['k1']}", f"$k_2=${data['k2']}"], fontsize=10, lblofst=[0, -0.5]).at(c1.end).to(c2.end)
 
         return to_bytes(d)
     
