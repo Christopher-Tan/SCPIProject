@@ -6,6 +6,15 @@ config_separator = "|"
 SCPI_argument_separator = ","
 SCPI_command_separator = ";"
 
+
+REL_FUNCTION_1 = 4
+REL_FUNCTION_2 = 17
+REL_FUNCTION_3 = 25
+REL_FUNCTION_4 = 27
+REL_FUNCTION_5 = 22
+
+HEARTBEAT = 18
+
 def read_config():
     with open(os.path.join(os.path.dirname(__file__), "config.yaml"), 'r') as file:
         return yaml.safe_load(file)
