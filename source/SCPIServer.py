@@ -30,6 +30,8 @@ except ImportError:
     lgpio = None
 
 if __name__ == "__main__":
+    chip = lgpio.gpiochip_open(4)
+    
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(("0.0.0.0", 50024))
     import threading
@@ -116,6 +118,12 @@ if __name__ == "__main__":
             time.sleep(2)
     
     threading.Thread(target=check_devices, daemon=True).start()
+    
+    def heartbeat():
+        lgpio.gpio_claim_output(chip, HEARTBEAT)
+        lgpio.tx_pwm(chip, HEARTBEAT, 1, 50)
+    
+    threading.Thread(target=heartbeat).start()
 
     def handle_client(conn):
         errors = deque(maxlen=10)
