@@ -23,6 +23,12 @@ from pyvisa import VisaIOError
 
 import time
 
+try:
+    import lgpio
+except ImportError:
+    print("lgpio module not found. Please install it to use GPIO functionality.")
+    lgpio = None
+
 if __name__ == "__main__":
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(("0.0.0.0", 50024))
