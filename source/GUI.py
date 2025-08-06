@@ -457,7 +457,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         global id
         id += 1
         
-        with stylable_container(f"copy{id}"), """
+        with stylable_container(f"copy{id}", """
             div {
                 text-align: right !important;
             }
