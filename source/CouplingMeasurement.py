@@ -31,9 +31,12 @@ config = read_config()
 
 class Measurements:
     """Class to hold the measurements of a transformer coupling measurement."""
+    freq = config['properties']['freq']['default']
+    voltLvl = config['properties']['voltLvl']['default']
+    nPrim = config['properties']['nPrim']['default']
+    nSec = config['properties']['nSec']['default']
+        
     def __init__(self):
-        self.freq = config['properties']['freq']['default']
-        self.voltLvl = config['properties']['voltLvl']['default']
         self.k = ''
         self.k1 = ''
         self.k2 = ''
@@ -43,8 +46,6 @@ class Measurements:
         self.Ls = ''
         self.Lp = ''
         self.N = ''
-        self.nPrim = config['properties']['nPrim']['default']
-        self.nSec = config['properties']['nSec']['default']
         self.v1_prim = ''
         self.v2_prim = ''
         self.v1_sec = ''
@@ -163,7 +164,7 @@ def measure(freq=config['properties']['freq']['default'], voltLvl=config['proper
         channels = [REL_FUNCTION_3]
         voltages = [1]
         setVoltage(channels, voltages)
-        time.sleep(0.8) # prevent error
+        time.sleep(delay+0.5) # prevent error
         [v1_1, v2_1] = getDMMmeasurements()
 
     # step 3: swap DMMs and perform measurement again (DMM1 <-> DMM2)
