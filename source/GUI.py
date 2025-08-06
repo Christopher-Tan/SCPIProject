@@ -11,7 +11,6 @@ import traceback
 
 if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     import streamlit as st
-    from streamlit_extras.grid import grid
     from streamlit_navigation_bar import st_navbar
     from streamlit_extras.stylable_container import stylable_container
     
@@ -361,9 +360,9 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     except Exception as e:
         error(f"<summary>Failed to fetch the configuration from the instrument</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
 
-    g = grid([6, 1.4, 1.4, 1.4], vertical_align='center')
+    t, e, p, r, h = st.columns([6, 1.4, 1.4, 1.4], vertical_alignment='center')
 
-    g.title("Coupling Measurements")
+    t.title("Coupling Measurements")
 
     def format_with_units(value, units):
         if isinstance(value, str):
@@ -579,9 +578,9 @@ N: {data['N']}
         output.seek(0)
         return output.getvalue()
         
-    g.download_button("Export", data=generate_data(data), file_name="coupling_measurement.pdf", key="export_button", use_container_width=True)
+    e.download_button("Export", data=generate_data(data), file_name="coupling_measurement.pdf", key="export_button", use_container_width=True)
 
-    if g.button("Run", args=(), key="measure_button", use_container_width=True):
+    if p.button("Run", args=(), key="measure_button", use_container_width=True):
         update_connections()
         e = []
         if dmm1 == "False":
@@ -603,7 +602,7 @@ N: {data['N']}
         except Exception as e:
             error(f"<summary>Failed to connect to and perform a measurement on the instrument</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
 
-    if g.button("Reset", args=(), key="reset_button", use_container_width=True):
+    if r.button("Reset", args=(), key="reset_button", use_container_width=True):
         try:
             instrument.reset()
             fetch()
@@ -611,11 +610,16 @@ N: {data['N']}
         except Exception as e:
             error(f"<summary>Failed to connect to and reset the instrument</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
             
+    if h.button("Clear history", args=(), key="reset_button", use_container_width=True):
+        try:
+            instrument.clear()
+            fetch()
+            check_server_errors()
+        except Exception as e:
+            error(f"<summary>Failed to connect to and clear history of the instrument</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
+            
     if "refresh_before" not in st.session_state:
         st.session_state["refresh_before"] = False
-        
-    if "refresh_after" not in st.session_state:
-        st.session_state["refresh_after"] = False
         
     def refresh():
         st.session_state["refresh_after"] = True
@@ -624,24 +628,17 @@ N: {data['N']}
         st.session_state["refresh_before"] = False
         fetch(local=True)
         
-    g = grid([0.86, 0.6, 0.86, 0.6, 0.86, 0.6, 0.86, 0.6], vertical_align='bottom')
+    v, vu, f, fu, p, pu, s, su = st.columns([0.86, 0.6, 0.86, 0.6, 0.86, 0.6, 0.86, 0.6], vertical_alignment='bottom')
     try:
-        instrument.voltage = g.number_input("Voltage", key="voltage", on_change=refresh, step=properties['voltLvl']['step']/st.session_state['voltage_scaling'], min_value=properties['voltLvl']['min']/st.session_state['voltage_scaling'], max_value=properties['voltLvl']['max']/st.session_state['voltage_scaling'], format=properties['voltLvl']['format']) * st.session_state['voltage_scaling']
-        g.write(st.session_state['voltage_units'])
-        st.session_state['persist_voltage'] = st.session_state['voltage']
-        instrument.frequency = g.number_input("Frequency", key="frequency", on_change=refresh, step=properties['freq']['step']/st.session_state['frequency_scaling'], min_value=properties['freq']['min']/st.session_state['frequency_scaling'], max_value=properties['freq']['max']/st.session_state['frequency_scaling'], format=properties['freq']['format']) * st.session_state['frequency_scaling']
-        g.write(st.session_state['frequency_units'])
-        st.session_state['persist_frequency'] = st.session_state['frequency']
-        instrument.nPrim = g.number_input("nPrim", key="nPrim", on_change=refresh, step=1, min_value=properties['nPrim']['min'], max_value=properties['nPrim']['max'])
-        g.write(st.session_state['nPrim_units'])
-        st.session_state['persist_nPrim'] = st.session_state['nPrim']
-        instrument.nSec = g.number_input("nSec", key="nSec", on_change=refresh, step=1, min_value=properties['nSec']['min'], max_value=properties['nSec']['max'])
-        g.write(st.session_state['nSec_units'])
-        st.session_state['persist_nSec'] = st.session_state['nSec']
-        if st.session_state["refresh_after"]:
-            st.session_state["refresh_after"] = False
-            st.session_state["refresh_before"] = True
-            st.rerun()
+        v.number_input("Voltage", args=("voltage",), key="voltage", on_change=refresh, step=properties['voltLvl']['step']/st.session_state['voltage_scaling'], min_value=properties['voltLvl']['min']/st.session_state['voltage_scaling'], max_value=properties['voltLvl']['max']/st.session_state['voltage_scaling'], format=properties['voltLvl']['format']) * st.session_state['voltage_scaling']
+        vu.write(st.session_state['voltage_units'])
+        f.number_input("Frequency", args=("frequency",), key="frequency", on_change=refresh, step=properties['freq']['step']/st.session_state['frequency_scaling'], min_value=properties['freq']['min']/st.session_state['frequency_scaling'], max_value=properties['freq']['max']/st.session_state['frequency_scaling'], format=properties['freq']['format']) * st.session_state['frequency_scaling']
+        fu.write(st.session_state['frequency_units'])
+        p.number_input("nPrim", args=("nPrim",), key="nPrim", on_change=refresh, step=1, min_value=properties['nPrim']['min'], max_value=properties['nPrim']['max'])
+        pu.write(st.session_state['nPrim_units'])
+        s.number_input("nSec", args=("nSec",), key="nSec", on_change=refresh, step=1, min_value=properties['nSec']['min'], max_value=properties['nSec']['max'])
+        su.write(st.session_state['nSec_units'])
+
         check_server_errors()
     except Exception as e:
         error(f"<summary>Failed to connect to and set the instrument parameters</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
