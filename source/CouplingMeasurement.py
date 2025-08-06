@@ -116,7 +116,7 @@ def measure(freq=config['properties']['freq']['default'], voltLvl=config['proper
         # init power supply
         # coupMeas_PS.write('*RST')
         # init channels 1-n
-        channels = [18,15,14]
+        channels = [REL_FUNCTION_1,REL_FUNCTION_2,REL_FUNCTION_3]
         for c in channels:
             lgpio.gpio_claim_output(chip, c)
             lgpio.gpio_write(chip, c, 1)
@@ -149,7 +149,7 @@ def measure(freq=config['properties']['freq']['default'], voltLvl=config['proper
 
     # step 1: perform LCR measurement
         delay = 0.5
-        channels = [18,15,14]
+        channels = [REL_FUNCTION_1,REL_FUNCTION_2,REL_FUNCTION_3]
         voltages = [0,0,0]
         setVoltage(channels, voltages)
         time.sleep(delay)
@@ -160,21 +160,21 @@ def measure(freq=config['properties']['freq']['default'], voltLvl=config['proper
         print('L1 = %3.3f uH' %(L1*1e6))    
 
     # step 2: perform DMM1 and DMM2 measurement
-        channels = [14]
+        channels = [REL_FUNCTION_3]
         voltages = [1]
         setVoltage(channels, voltages)
         time.sleep(0.8) # prevent error
         [v1_1, v2_1] = getDMMmeasurements()
 
     # step 3: swap DMMs and perform measurement again (DMM1 <-> DMM2)
-        channels = [15]
+        channels = [REL_FUNCTION_2]
         voltages = [1]
         setVoltage(channels, voltages)
         time.sleep(delay)
         [v1_2, v2_2] = getDMMmeasurements()
 
         # turn off all channels
-        channels = [18,15,14]
+        channels = [REL_FUNCTION_1,REL_FUNCTION_2,REL_FUNCTION_3]
         voltages = [0,0,0]
         setVoltage(channels, voltages)
 
@@ -187,7 +187,7 @@ def measure(freq=config['properties']['freq']['default'], voltLvl=config['proper
         print('k1 = %3.4f' %(k1))
 
     # step 4: perform LCR measurement on secondary side (same as step 1)
-        channels = [18]
+        channels = [REL_FUNCTION_1]
         voltages = [1]
         setVoltage(channels, voltages)
         time.sleep(delay)
@@ -196,21 +196,21 @@ def measure(freq=config['properties']['freq']['default'], voltLvl=config['proper
         print('L2 = %3.3f uH' %(L2*1e6))
 
     # step 5: perform DMM1 and DMM2 measurement (same as step 2)
-        channels = [14]
+        channels = [REL_FUNCTION_3]
         voltages = [1]
         setVoltage(channels, voltages)
         time.sleep(delay)
         [v1_1, v2_1] = getDMMmeasurements()
 
     # step 6: swap DMMs and perform measurement again (DMM1 <-> DMM2) (same as step 3)
-        channels = [15]
+        channels = [REL_FUNCTION_2]
         voltages = [1]
         setVoltage(channels, voltages)
         time.sleep(delay)
         [v1_2, v2_2] = getDMMmeasurements()
 
         # turn off all channels
-        channels = [18,15,14]
+        channels = [REL_FUNCTION_1,REL_FUNCTION_2,REL_FUNCTION_3]
         voltages = [0,0,0]
         setVoltage(channels, voltages)
 
