@@ -398,6 +398,10 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         }
     try:
         data = get_data(st.session_state['history'])
+        for _, i in data.items():
+            if len(str(i)) > 1024:
+                get_data.clear(st.session_state['history'])
+                st.rerun()
     except Exception as e:
         error(f"<summary>Failed to connect to and fetch the measurement data</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
 
@@ -406,6 +410,17 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     color("dmm1", dmm1)
     color("dmm2", dmm2)
     color("lcr", lcr)
+    
+    st.markdown("""
+    <style>
+    .stElementContainer:has(style) {
+        display: none;
+    }
+    .stElementContainer:has(hr) {
+        display: none;
+    }
+    </style>
+    """, unsafe_allow_html=True)
     
     import schemdraw
     import schemdraw.elements as elm
@@ -417,9 +432,54 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         diagram.save(buf, dpi=200)
         buf.seek(0)
         return buf
+    
+    try:
+        from PyQt5.QtWidgets import QApplication
+        from PyQt5.QtGui import QImage
         
+        def copy_image(image):
+            app = QApplication(sys.argv)
+            clipboard = app.clipboard()
+            
+            data = QImage()
+            data.loadFromData(image.getvalue(), "PNG")
+            
+            clipboard.setImage(data)
+    except:
+        pass
+        
+    STANDARD_SHAPE = [1, 2.4, 1]
+    DEFORMED_SHAPE = [1, 4.6, 1]
+        
+    id = 0
+    
+    def copy_button(item):
+        global id
+        id += 1
+        
+        with stylable_container(f"copy{id}"), """
+            div {
+                text-align: right !important;
+            }
+            button {
+                border: none !important;
+                width: 10px;
+                background-color: transparent;
+            }
+        """):
+            if isinstance(item, BytesIO):
+                if not is_raspberry_pi() and st.columns(DEFORMED_SHAPE)[1].button("", key=str(id)):
+                    copy_image(item)
+                    st.toast("Copied to clipboard")
+            else:
+                import pyperclip
+                if st.button("", key=str(id)):
+                    pyperclip.copy("\n".join(item).replace("*", ""))
+                    st.toast("Copied to clipboard")
+    
     def render(buf):
-        _, i, _ = st.columns([1, 2.4, 1], vertical_alignment='center')
+        copy_button(buf)
+        _, i, _ = st.columns(STANDARD_SHAPE, vertical_alignment='center')
         i.image(buf, use_container_width=True)
         
     @st.cache_data
