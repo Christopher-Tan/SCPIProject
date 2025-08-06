@@ -15,6 +15,13 @@ REL_FUNCTION_5 = 22
 
 HEARTBEAT = 18
 
+import io
+def is_raspberry_pi():
+    try:
+        return "raspberry pi" in io.open('/sys/firmware/devicetree/base/model', 'r').read().lower()
+    except:
+        return False
+
 def read_config():
     with open(os.path.join(os.path.dirname(__file__), "config.yaml"), 'r') as file:
         return yaml.safe_load(file)
