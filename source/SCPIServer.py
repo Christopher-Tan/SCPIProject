@@ -143,6 +143,15 @@ if __name__ == "__main__":
                     write_config(config)
                     update_status()
                     
+                def reset():
+                    Measurements
+                    
+                def clear():
+                    nonlocal measurements
+                    measurement_list.remove_viewer(measurements)
+                    del measurements
+                    measurements = measurement_list.create_viewer()
+                    
                 parser = SCPIParser({
                     ":MEASure:HISTory:COUPling:K?": lambda measurement=0: measurements[measurement].k,
                     ":MEASure:HISTory:COUPling:K1?": lambda measurement=0: measurements[measurement].k1,
@@ -167,18 +176,19 @@ if __name__ == "__main__":
                     ":MEASure:HISTory:COUPling:TIME?": lambda measurement=0: measurements[measurement].time,
                     
                     ":MEASure[:COUPling]": measure,
-                    ":MEASure:COUPling:FREQuency": lambda freq: setattr(new_measurement, 'freq', float(freq)) if (config['properties']['freq']['min'] is None or float(freq) >= config['properties']['freq']['min']) and (config['properties']['freq']['max'] is None or float(freq) <= config['properties']['freq']['max']) else errors.append(f"Frequency {freq} out of range"),
-                    ":MEASure:COUPling:VOLTage": lambda volt: setattr(new_measurement, 'voltLvl', float(volt)) if (config['properties']['voltLvl']['min'] is None or float(volt) >= config['properties']['voltLvl']['min']) and (config['properties']['voltLvl']['max'] is None or float(volt) <= config['properties']['voltLvl']['max']) else errors.append(f"Voltage {volt} out of range"),
-                    ":MEASure:COUPling:NPRIMary": lambda nPrim: setattr(new_measurement, 'nPrim', int(nPrim)) if (config['properties']['nPrim']['min'] is None or int(nPrim) >= config['properties']['nPrim']['min']) and (config['properties']['nPrim']['max'] is None or int(nPrim) <= config['properties']['nPrim']['max']) else errors.append(f"Primary turns {nPrim} out of range"),
-                    ":MEASure:COUPling:NSECondary": lambda nSec: setattr(new_measurement, 'nSec', int(nSec)) if (config['properties']['nSec']['min'] is None or int(nSec) >= config['properties']['nSec']['min']) and (config['properties']['nSec']['max'] is None or int(nSec) <= config['properties']['nSec']['max']) else errors.append(f"Secondary turns {nSec} out of range"),
-                    ":MEASure:COUPling:FREQuency?": lambda: new_measurement.freq,
-                    ":MEASure:COUPling:VOLTage?": lambda: new_measurement.voltLvl,
-                    ":MEASure:COUPling:NPRIMary?": lambda: new_measurement.nPrim,
-                    ":MEASure:COUPling:NSECondary?": lambda: new_measurement.nSec,
+                    ":MEASure:COUPling:FREQuency": lambda freq: setattr(Measurements, 'freq', float(freq)) if (config['properties']['freq']['min'] is None or float(freq) >= config['properties']['freq']['min']) and (config['properties']['freq']['max'] is None or float(freq) <= config['properties']['freq']['max']) else errors.append(f"Frequency {freq} out of range"),
+                    ":MEASure:COUPling:VOLTage": lambda volt: setattr(Measurements, 'voltLvl', float(volt)) if (config['properties']['voltLvl']['min'] is None or float(volt) >= config['properties']['voltLvl']['min']) and (config['properties']['voltLvl']['max'] is None or float(volt) <= config['properties']['voltLvl']['max']) else errors.append(f"Voltage {volt} out of range"),
+                    ":MEASure:COUPling:NPRIMary": lambda nPrim: setattr(Measurements, 'nPrim', int(nPrim)) if (config['properties']['nPrim']['min'] is None or int(nPrim) >= config['properties']['nPrim']['min']) and (config['properties']['nPrim']['max'] is None or int(nPrim) <= config['properties']['nPrim']['max']) else errors.append(f"Primary turns {nPrim} out of range"),
+                    ":MEASure:COUPling:NSECondary": lambda nSec: setattr(Measurements, 'nSec', int(nSec)) if (config['properties']['nSec']['min'] is None or int(nSec) >= config['properties']['nSec']['min']) and (config['properties']['nSec']['max'] is None or int(nSec) <= config['properties']['nSec']['max']) else errors.append(f"Secondary turns {nSec} out of range"),
+                    ":MEASure:COUPling:FREQuency?": lambda: Measurements.freq,
+                    ":MEASure:COUPling:VOLTage?": lambda: Measurements.voltLvl,
+                    ":MEASure:COUPling:NPRIMary?": lambda: Measurements.nPrim,
+                    ":MEASure:COUPling:NSECondary?": lambda: Measurements.nSec,
                     
                     ":MEASure:HISTory:COUPling:NUMBer?": lambda: len(measurements),
                     "*IDN?": lambda: "Raspberry Pi",
-                    "*RST": new_measurement.__init__,
+                    "*RST": reset,
+                    "*CLS": clear,
                     ":SYSTem:ERRor?": lambda: errors.popleft() if errors else "0,No error",
                     
                     ":CONFig": set_config,
