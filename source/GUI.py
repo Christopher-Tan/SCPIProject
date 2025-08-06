@@ -198,11 +198,11 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         s2.markdown('<p class="dmm2" style="display: none; border-radius: 6px; text-align: center;">DMM2</p>', unsafe_allow_html=True)
         s3.markdown('<p class="lcr" style="display: none; border-radius: 6px; text-align: center;">LCR</p>', unsafe_allow_html=True)
         
-        if r.button("↻", key="rerun", use_container_width=True):
+        if r.button("↻", key="rerun", use_container_width=True, help="Refresh page without breaking connection"):
             st.session_state["refresh_before"] = True
             st.rerun()
             
-        if c.button("⚙️", key="config", use_container_width=True):
+        if c.button("⚙️", key="config", use_container_width=True, help="Configuration menu"):
             configure()
             
     if 'history' not in st.session_state:
@@ -356,9 +356,9 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     except Exception as e:
         error(f"<summary>Failed to fetch the configuration from the instrument</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
 
-    t, e, p, r, h = st.columns([6, 1.4, 1.4, 1.4], vertical_alignment='center')
+    t, e, p, r, h = st.columns([4, 1.4, 1.4, 1.4, 1.4], vertical_alignment='center')
 
-    t.title("Coupling Measurements")
+    t.title("Coupling")
 
     def format_with_units(value, units):
         if isinstance(value, str):
@@ -500,13 +500,13 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     def template(data):
         return f"""
 **{instrument.channels[st.session_state['history']].time}**  
-  
+
 **Set values**  
 Voltage: {data['voltage']}  
 Frequency: {data['frequency']}  
 nPrim: {data['nPrim']}  
 nSec: {data['nSec']}  
-  
+
 **Raw values from measurement**  
 L1: {data['L1']}  
 L2: {data['L2']}  
@@ -517,7 +517,7 @@ v1_prim: {data['v1_prim']}
 v2_prim: {data['v2_prim']}  
 v1_sec: {data['v1_sec']}  
 v2_sec: {data['v2_sec']}  
-  
+
 **Calculated values**  
 *T-model*:  
 Ls1_prim: {data['Ls1_prim']}  
@@ -528,7 +528,7 @@ Lm: {data['Lm']}
 Ls: {data['Ls']}  
 Lp: {data['Lp']}  
 N: {data['N']}  
-"""
+""".split("\n\n")
         
     @st.cache_data
     def generate_data(data):
@@ -574,9 +574,9 @@ N: {data['N']}
         output.seek(0)
         return output.getvalue()
         
-    e.download_button("Export", data=generate_data(data), file_name="coupling_measurement.pdf", key="export_button", use_container_width=True)
+    e.download_button("Export", data=generate_data(data), file_name="coupling_measurement.pdf", key="export_button", use_container_width=True, help="Downloads a PDF containing the current measurement data")
 
-    if p.button("Run", args=(), key="measure_button", use_container_width=True):
+    if p.button("Run", args=(), key="measure_button", use_container_width=True, help="Performs a new measurement"):
         update_connections()
         e = []
         if dmm1 == "False":
@@ -598,7 +598,7 @@ N: {data['N']}
         except Exception as e:
             error(f"<summary>Failed to connect to and perform a measurement on the instrument</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
 
-    if r.button("Reset", args=(), key="reset_button", use_container_width=True):
+    if r.button("Reset", args=(), key="reset_button", use_container_width=True, help="Resets input values to default"):
         try:
             instrument.reset()
             fetch()
@@ -606,7 +606,7 @@ N: {data['N']}
         except Exception as e:
             error(f"<summary>Failed to connect to and reset the instrument</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
             
-    if h.button("Clear history", args=(), key="reset_button", use_container_width=True):
+    if h.button("Clear history", args=(), key="reset_button", use_container_width=True, help="Clears current measurement and all history"):
         try:
             instrument.clear()
             fetch()
