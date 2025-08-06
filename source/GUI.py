@@ -510,9 +510,9 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             s1 = elm.Line().up().at(t.s1).length(0.5)
             s2 = elm.Line().down().at(t.s2).length(0.5)
 
-            l2 = elm.Inductor2().at(p1.end).label(adjust_value(data['Ls1_prim'] if flip else data['Ls2_prim']), fontsize=10)
+            l2 = elm.Inductor().at(p1.end).label(adjust_value(data['Ls1_prim'] if flip else data['Ls2_prim']), fontsize=10).scale(1.6)
             flip_element(l2, invert=flip)
-            l1 = elm.Inductor2().at(l2.end).label(adjust_value(data['Ls2_prim'] if flip else data['Ls1_prim']), fontsize=10)
+            l1 = elm.Inductor().at(l2.end).label(adjust_value(data['Ls2_prim'] if flip else data['Ls1_prim']), fontsize=10).scale(1.6)
             flip_element(l1, invert=flip)
 
             w2 = elm.Line().at(p2.end)
@@ -520,7 +520,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             w1 = elm.Line().at(w2.end)
             flip_element(w1, invert=flip)
             
-            lm = elm.Inductor2().down().at(l2.end).to(w2.end).flip().label(adjust_value(data['Lm']), fontsize=10)
+            lm = elm.Inductor().down().at(l2.end).to(w2.end).flip().label(adjust_value(data['Lm']), fontsize=10).scale(1.6)
             
             c1 = elm.Line().at(s1.end).length(2)
             flip_element(c1, invert=not flip)
@@ -542,12 +542,12 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             s2 = elm.Line().down().at(t.s2).length(0.5)
             
             w3 = elm.Line().left().at(p1.end).length(2)
-            ls = elm.Inductor2().left().at(w3.end).flip().label(data['Ls'], fontsize=10)
+            ls = elm.Inductor().left().at(w3.end).flip().label(data['Ls'], fontsize=10).scale(1.6)
 
             w2 = elm.Line().left().at(p2.end).length(2)
             w1 = elm.Line().left().at(w2.end)
             
-            lp = elm.Inductor2().down().at(w3.end).to(w2.end).flip().label(data['Lp'], fontsize=10)
+            lp = elm.Inductor().down().at(w3.end).to(w2.end).flip().label(data['Lp'], fontsize=10).scale(1.6)
             
             c1 = elm.Line().right().at(s1.end).length(2)
             c2 = elm.Line().right().at(s2.end).length(2)
@@ -666,7 +666,7 @@ N: {data['N']}
         except Exception as e:
             error(f"<summary>Failed to connect to and reset the instrument</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
             
-    if h.button("Clear history", args=(), key="reset_button", use_container_width=True, help="Clears current measurement and all history"):
+    if h.button("Clear history", args=(), key="clear_button", use_container_width=True, help="Clears current measurement and all history"):
         try:
             instrument.clear()
             fetch()
@@ -748,7 +748,13 @@ N: {data['N']}
                     text-align: center;
                 }
             """):
-                st.write(template(data))
+                t, l, c, r = template(data)
+                copy_button([l, c, r])
+                st.write(t)
+                cl, cc, cr = st.columns(3)
+                cl.write(l)
+                cc.write(c)
+                cr.write(r)
         elif n == "T-Model":
             render(t_model(data))
             render(t_model(data, flip=True))
