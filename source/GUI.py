@@ -221,18 +221,14 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             except:
                 raise
 
-    def fetch(local=False):
+    def fetch():
         if instrument:
-            st.session_state['voltage'], st.session_state['voltage_units'], st.session_state['voltage_scaling'] = replace_prefix(((st.session_state['persist_voltage'] * st.session_state['voltage_scaling']) if local else instrument.voltage), properties['voltLvl']['units'])
-            st.session_state['frequency'], st.session_state['frequency_units'], st.session_state['frequency_scaling'] = replace_prefix(((st.session_state['persist_frequency'] * st.session_state['frequency_scaling']) if local else instrument.frequency), properties['freq']['units'])
-            st.session_state['nPrim'], st.session_state['nPrim_units'] = replace_suffix((st.session_state['persist_nPrim'] if local else instrument.nPrim), properties['nPrim']['units'])
-            st.session_state['nSec'], st.session_state['nSec_units'] = replace_suffix((st.session_state['persist_nSec'] if local else instrument.nSec), properties['nSec']['units'])
-            if not local:
-                st.session_state['persist_voltage'] = st.session_state['voltage']
-                st.session_state['persist_frequency'] = st.session_state['frequency']
-                st.session_state['persist_nPrim'] = st.session_state['nPrim']
-                st.session_state['persist_nSec'] = st.session_state['nSec']
-                fetch_history()
+            st.session_state['voltage'], st.session_state['voltage_units'], st.session_state['voltage_scaling'] = replace_prefix(instrument.voltage, properties['voltLvl']['units'])
+            st.session_state['frequency'], st.session_state['frequency_units'], st.session_state['frequency_scaling'] = replace_prefix(instrument.frequency, properties['freq']['units'])
+            st.session_state['nPrim'], st.session_state['nPrim_units'] = replace_suffix(instrument.nPrim, properties['nPrim']['units'])
+            st.session_state['nSec'], st.session_state['nSec_units'] = replace_suffix(instrument.nSec, properties['nSec']['units'])
+
+            fetch_history()
 
     metric_prefixes = {
         'y': 1e-24, 
@@ -621,18 +617,20 @@ N: {data['N']}
     if "refresh_before" not in st.session_state:
         st.session_state["refresh_before"] = False
         
-    def refresh():
-        st.session_state["refresh_after"] = True
+    def refresh(key, scaling=1):
+        if key in st.session_state:
+            setattr(instrument, key, st.session_state[key] * scaling)
+        fetch()
         
     if st.session_state["refresh_before"]:
         st.session_state["refresh_before"] = False
-        fetch(local=True)
+        fetch()
         
-    v, vu, f, fu, p, pu, s, su = st.columns([0.86, 0.6, 0.86, 0.6, 0.86, 0.6, 0.86, 0.6], vertical_alignment='bottom')
+    v, vu, f, fu, p, pu, s, su = [*st.columns([1, 0.24, 1, 0.24,], vertical_alignment='bottom'), *st.columns([1, 0.24, 1, 0.24,], vertical_alignment='bottom')] if is_raspberry_pi() else st.columns([0.86, 0.6, 0.86, 0.6, 0.86, 0.6, 0.86, 0.6], vertical_alignment='bottom')
     try:
-        v.number_input("Voltage", args=("voltage",), key="voltage", on_change=refresh, step=properties['voltLvl']['step']/st.session_state['voltage_scaling'], min_value=properties['voltLvl']['min']/st.session_state['voltage_scaling'], max_value=properties['voltLvl']['max']/st.session_state['voltage_scaling'], format=properties['voltLvl']['format']) * st.session_state['voltage_scaling']
+        v.number_input("Voltage", args=("voltage",st.session_state['voltage_scaling']), key="voltage", on_change=refresh, step=properties['voltLvl']['step']/st.session_state['voltage_scaling'], min_value=properties['voltLvl']['min']/st.session_state['voltage_scaling'], max_value=properties['voltLvl']['max']/st.session_state['voltage_scaling'], format=properties['voltLvl']['format'])
         vu.write(st.session_state['voltage_units'])
-        f.number_input("Frequency", args=("frequency",), key="frequency", on_change=refresh, step=properties['freq']['step']/st.session_state['frequency_scaling'], min_value=properties['freq']['min']/st.session_state['frequency_scaling'], max_value=properties['freq']['max']/st.session_state['frequency_scaling'], format=properties['freq']['format']) * st.session_state['frequency_scaling']
+        f.number_input("Frequency", args=("frequency",st.session_state['frequency_scaling']), key="frequency", on_change=refresh, step=properties['freq']['step']/st.session_state['frequency_scaling'], min_value=properties['freq']['min']/st.session_state['frequency_scaling'], max_value=properties['freq']['max']/st.session_state['frequency_scaling'], format=properties['freq']['format'])
         fu.write(st.session_state['frequency_units'])
         p.number_input("nPrim", args=("nPrim",), key="nPrim", on_change=refresh, step=1, min_value=properties['nPrim']['min'], max_value=properties['nPrim']['max'])
         pu.write(st.session_state['nPrim_units'])
