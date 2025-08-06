@@ -144,7 +144,10 @@ if __name__ == "__main__":
                     update_status()
                     
                 def reset():
-                    Measurements
+                    Measurements.freq = config['properties']['freq']['default']
+                    Measurements.voltLvl = config['properties']['voltLvl']['default']
+                    Measurements.nPrim = config['properties']['nPrim']['default']
+                    Measurements.nSec = config['properties']['nSec']['default']
                     
                 def clear():
                     nonlocal measurements
