@@ -4,7 +4,6 @@ server:
 
 client:
   developerMode: false
-  windowMode: true
 
 properties:
   freq:
