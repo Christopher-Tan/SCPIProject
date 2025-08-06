@@ -468,12 +468,12 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             }
         """):
             if isinstance(item, BytesIO):
-                if not is_raspberry_pi() and st.columns(DEFORMED_SHAPE)[1].button("", key=str(id)):
+                if not is_raspberry_pi() and st.columns(DEFORMED_SHAPE)[1].button("📋", key=str(id)):
                     copy_image(item)
                     st.toast("Copied to clipboard")
             else:
                 import pyperclip
-                if st.button("", key=str(id)):
+                if st.button("📋", key=str(id)):
                     pyperclip.copy("\n".join(item).replace("*", ""))
                     st.toast("Copied to clipboard")
     
