@@ -1,7 +1,7 @@
 #get temp debug
 from pymeasure.instruments.agilent import Agilent34465A
 #from pymeasure.instruments.rohdeschwarz import HMP4030
-from pymeasure.instruments.rohdeschwarz import Hmc804X
+#from pymeasure.instruments.rohdeschwarz import Hmc804X
 from pymeasure.instruments.keysight import KeysightE4980AL
 #from pymeasureauxiliary.dynplot import Dynplt
 import matplotlib.pyplot as plt

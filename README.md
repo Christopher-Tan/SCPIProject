@@ -1,8 +1,32 @@
 # SCPIProject
 
+## Project Overview
+
+```mermaid
+%%{ init: { "flowchart": { "curve": "monotoneY" } } }%%
+graph TB
+DMM1(DMM1)
+DMM2(DMM2)
+LCR(LCR)
+Headerboard(Headerboard)
+DMM1 & DMM2 & LCR --- Headerboard
+subgraph Server[Raspberry Pi]
+    SCPIServer(SCPI Server)
+    SCPIClient1(SCPI Client 1<br>Built-in Screen)
+end
+subgraph Client[Desktop]
+    SCPIClient2(SCPI Client 2<br>Web Interface)
+end
+SCPIServer --> SCPIClient1
+SCPIServer --> SCPIClient2
+Headerboard --> SCPIServer
+```
+
+This project implements a SCPI (Standard Commands for Programmable Instruments) server and client system using Python. The server runs on a Raspberry Pi and controls the measurement path of different instruments (DMMs, LCR meter) through a headerboard by manipulating relays. It then talks to the instruments directly over SCPI (not shown) to fetch the measurement values. The client script can be run either as a built-in screen on the Raspberry Pi or a web interface accessible from a desktop.
+
 ## Setup Instructions
 
-### 1. Setting Up the Environment (Server and Client)
+### 1. Setting Up the Environment (Raspberry Pi and Desktop)
 
 1. **Clone the Repository**  
     Clone this repository to your local machine:
@@ -21,27 +45,9 @@
 3. **Install Required Dependencies**  
     Install the required dependencies from the `requirements.txt` file:
     ```bash
-    pip install -r source/requirements.txt
+    python source/install.py
     ```
 
-4. **Install the Custom PyMeasure Library**  
-    We use a custom version of PyMeasure with additional instruments. You have two options to integrate this:
-    #### Option 1: Modify Your Existing PyMeasure Library
-    - Copy the instruments from our `source/instruments` folder.
-    - Paste them into your local `pymeasure/instruments` folder.
-    - To locate your existing PyMeasure installation, you can use the following Python command:
-    ```python
-    import pymeasure
-    print(pymeasure.__file__)
-    ```
-    - This will print the path to the PyMeasure library on your system.
-    - Navigate to the `instruments` folder within that path and paste the copied instruments there.  
-    #### Option 2: Use Our Custom PyMeasure Version
-    - Install our custom version directly:
-    ```bash
-    pip install -e source/pymeasure
-    ```
-    - **Warning:** This will overwrite any local changes in your existing PyMeasure library. If you have a custom PyMeasure setup, back up your changes before proceeding.
 
 ### 2. Automatically Start the Server on a Raspberry Pi
 

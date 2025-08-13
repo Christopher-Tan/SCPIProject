@@ -77,7 +77,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         except:
             st.write(error)
     
-    @st.dialog("Error")
+    @st.dialog("Error", on_dismiss="rerun")
     def error(main_error, likely_causes=[], replace_instrument=True): # sometimes the client side error is a direct result of the server side error, we show these errors first
         st.markdown("""
             <style>
@@ -172,7 +172,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
                     updated_data[key] = st.text_input(f"{nice(key)}", value=value, key=field_key).replace(path_separator, '').replace(config_separator, '').replace(SCPI_argument_separator, '').replace(SCPI_command_separator, '')
         return updated_data
     
-    @st.dialog("Configuration", width="large")
+    @st.dialog("Configuration", width="large", on_dismiss="rerun")
     def configure():
         with st.form("config_form"):
             from copy import deepcopy
@@ -284,7 +284,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     
     st.set_page_config(page_title="Coupling Measurements", layout="wide")
                     
-    from OST import CouplingMeasurer
+    from pymeasure.instruments.OST import CouplingMeasurer
     if 'instrument' not in st.session_state:
         try:
             with st.spinner("Connecting...", show_time=True):
@@ -332,7 +332,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
         except Exception as e:
             error(f"<summary>Failed to apply the configuration</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
 
-    @st.dialog("Configuration Changed")
+    @st.dialog("Configuration Changed", dismissible=False, on_dismiss="rerun")
     def confirm():
         st.write("Since the last time you've connected, your configuration files and the servers have diverged. This can be due to other users updating the configuration or this could be intentional on your part by manually changing config.yaml. Please choose to either publish your updates to the server or fetch the servers new configuration.")
         
