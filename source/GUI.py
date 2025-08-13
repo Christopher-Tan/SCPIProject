@@ -174,6 +174,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     
     @st.dialog("Configuration", width="large", on_dismiss="rerun")
     def configure():
+        st.write("SCPI Project 1.0.0")
         with st.form("config_form"):
             from copy import deepcopy
             st.session_state["conf"] = deepcopy(nested_dict_to_form(config))
@@ -223,11 +224,16 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
 
     def fetch():
         if instrument:
-            st.session_state['voltage'], st.session_state['voltage_units'], st.session_state['voltage_scaling'] = replace_prefix(instrument.voltage, properties['voltLvl']['units'])
-            st.session_state['frequency'], st.session_state['frequency_units'], st.session_state['frequency_scaling'] = replace_prefix(instrument.frequency, properties['freq']['units'])
-            st.session_state['nPrim'], st.session_state['nPrim_units'] = replace_suffix(instrument.nPrim, properties['nPrim']['units'])
-            st.session_state['nSec'], st.session_state['nSec_units'] = replace_suffix(instrument.nSec, properties['nSec']['units'])
-
+            try:
+                st.session_state['voltage'], st.session_state['voltage_units'], st.session_state['voltage_scaling'] = replace_prefix(instrument.voltage, properties['voltLvl']['units'])
+                st.session_state['frequency'], st.session_state['frequency_units'], st.session_state['frequency_scaling'] = replace_prefix(instrument.frequency, properties['freq']['units'])
+                st.session_state['nPrim'], st.session_state['nPrim_units'] = replace_suffix(instrument.nPrim, properties['nPrim']['units'])
+                st.session_state['nSec'], st.session_state['nSec_units'] = replace_suffix(instrument.nSec, properties['nSec']['units'])
+            except (ValueError, TypeError): # a connection to the instrument is still present, but the results are lagging in their buffer
+                pass
+            except:
+                raise
+            
             fetch_history()
 
     metric_prefixes = {
@@ -395,6 +401,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
             'Ls': format_with_units(instrument.channels[number].Ls, properties['Ls']['units']),
             'Lp': format_with_units(instrument.channels[number].Lp, properties['Lp']['units']),
             'N': special_format(instrument.channels[number].N),
+            "time": instrument.channels[number].time,
         }
     try:
         data = get_data(st.session_state['history'])
@@ -559,7 +566,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "streamlit":
     @st.cache_data
     def template(data):
         return f"""
-**{instrument.channels[st.session_state['history']].time}**  
+**{data["time"]}**  
 
 **Set values**  
 Voltage: {data['voltage']}  
@@ -603,29 +610,45 @@ N: {data['N']}
         c = canvas.Canvas(output, pagesize=letter)
         width, height = letter
         
-        table_data = [["Parameter", "Value"]]
-        for key, value in data.items():
-            table_data.append([key, value])
+        c.drawString(40, height - 40, data['time'])
+        
+        table_data = []
+        row_headers = [0]
+        
+        sections = {
+            "Set values": ["voltage", "frequency", "nPrim", "nSec"],
+            "Raw values": ["L1", "L2", "k", "k1", "k2", "v1_prim", "v2_prim", "v1_sec", "v2_sec"],
+            "T-model": ["Ls1_prim", "Ls2_prim", "Lm"],
+            "Gamma model": ["Ls", "Lp", "N"]
+        }
+        
+        for i, j in sections.items():
+            table_data.append([i])
+            for k in j:
+                table_data.append([k, data[k]])
+            table_data.append([""])  # Add an empty row for spacing
+            row_headers.append(row_headers[-1] + len(j) + 2)
         
         table = Table(table_data)
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        styles = [
             ('ALIGN', (0, 0), (0, -1), 'CENTER'), # Center align the first column
             ('ALIGN', (1, 0), (1, -1), 'LEFT'), # Left align the second column
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            # ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            # ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            # ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ]))
-        
+        ]
+        for row in table_data:
+            styles += [
+                ('BACKGROUND', (0, row, -1, row), colors.grey),
+                ('TEXTCOLOR', (0, row, -1, row), colors.whitesmoke),
+                ('FONTNAME', (0, row, -1, row), 'Helvetica-Bold'),
+            ]
+
+        table.setStyle(TableStyle(styles))
         table.wrapOn(c, width, height)
-        table.drawOn(c, 40, height - 400)
+        table.drawOn(c, 40, height - 120 - (len(table_data) + 4) * 18)
         
         h = height - 200
         for image in [t_model(data), t_model(data, flip=True), gamma_model(data)]:
             img = ImageReader(image)
-            c.drawImage(img, 200, h, 300, 150)
+            c.drawImage(img, 240, h, 300, 150)
             h -= 150
         
         c.showPage()
@@ -634,7 +657,7 @@ N: {data['N']}
         output.seek(0)
         return output.getvalue()
         
-    e.download_button("Export", data=generate_data(data), file_name="coupling_measurement.pdf", key="export_button", use_container_width=True, help="Downloads a PDF containing the current measurement data")
+    e.download_button("Export", data=generate_data(data), file_name=f"{data['time']}_coupling_measurement.pdf", key="export_button", use_container_width=True, help="Downloads a PDF containing the current measurement data")
 
     if p.button("Run", args=(), key="measure_button", use_container_width=True, help="Performs a new measurement"):
         update_connections()
