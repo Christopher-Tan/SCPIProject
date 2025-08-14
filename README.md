@@ -5,21 +5,29 @@
 ```mermaid
 %%{ init: { "flowchart": { "curve": "monotoneY" } } }%%
 graph TB
-DMM1(DMM1)
-DMM2(DMM2)
-LCR(LCR)
-Headerboard(Headerboard)
-DMM1 & DMM2 & LCR --- Headerboard
-subgraph Server[Raspberry Pi]
-    SCPIServer(SCPI Server)
-    SCPIClient1(SCPI Client 1<br>Built-in Screen)
-end
-subgraph Client[Desktop]
-    SCPIClient2(SCPI Client 2<br>Web Interface)
-end
-SCPIServer --- SCPIClient1
-SCPIServer --- SCPIClient2
-Headerboard --- SCPIServer
+    DMM1(DMM1)
+    DMM2(DMM2)
+    LCR(LCR)
+    Headerboard(Headerboard)
+    DMM1 & DMM2 & LCR --- Headerboard
+
+    subgraph Server[Raspberry Pi]
+        SCPIServer(SCPI Server)
+        SCPIClient1(SCPI Client 1<br>Built-in Screen)
+    end
+
+    subgraph Client[Desktop]
+        SCPIClient2(SCPI Client 2<br>Web Interface)
+    end
+
+    SCPIServer --- SCPIClient1
+    SCPIServer --- SCPIClient2
+    Headerboard --- SCPIServer
+
+    %% Styling Directives %%
+    style DMM1,DMM2,LCR,Headerboard,SCPIServer,SCPIClient1,SCPIClient2 fill:#cccccc
+    style Server fill:#eeeeee,stroke-width:2px,rx:10,ry:10
+    style Client fill:#eeeeee,stroke-width:2px,rx:10,ry:10
 ```
 
 This project implements a SCPI (Standard Commands for Programmable Instruments) server and client system using Python. The server runs on a Raspberry Pi and controls the measurement path of different instruments (DMMs, LCR meter) through a headerboard by manipulating relays. It then talks to the instruments directly over SCPI (not shown) to fetch the measurement values. The client script can be run either as a built-in screen on the Raspberry Pi or a web interface accessible from a desktop.
