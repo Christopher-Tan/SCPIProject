@@ -68,7 +68,7 @@ python source/SCPIClient.py
 To ensure the server starts automatically when the Raspberry Pi boots, follow these steps:
 
 1. **Edit /etc/rc.local**  
-Edit this file to look as follows
+    Edit this file to look as follows
     ```bash
     #!/bin/bash
     # Replace the following placeholders with your specific details:
@@ -100,13 +100,12 @@ To ensure the client starts automatically on the built-in screen when the Raspbe
 
 2. **Edit $HOME/.config/autostart**  
     Edit or create a file named `SCPIClient.desktop` in the `$HOME/.config/autostart` directory with the following content:
-        ```ini
-        [Desktop Entry]
-        Type=Application
-        Exec={env}/bin/python3 {project_location}/source/SCPIClient.py
-        ```
-
-        Replace `{env}` with the path to your virtual environment and `{project_location}` with the path to your SCPIProject folder.
+    ```ini
+    [Desktop Entry]
+    Type=Application
+    Exec={env}/bin/python3 {project_location}/source/SCPIClient.py
+    ```
+    Replace `{env}` with the path to your virtual environment and `{project_location}` with the path to your SCPIProject folder.
 
     ### Example:
     If your virtual environment is located at `/home/pi/venv` and your project is in `/home/pi/SCPIProject`, the file would look like this:
