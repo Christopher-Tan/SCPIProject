@@ -44,7 +44,7 @@ This project implements a SCPI (Standard Commands for Programmable Instruments) 
 
 
 3. **Install Required Dependencies**  
-    Install the required dependencies from the `requirements.txt` file:
+    Install the required dependencies from the `install.py` file:
     ```bash
     python source/install.py
     ```
@@ -63,12 +63,6 @@ To run the SCPI Client
 python source/SCPIClient.py
 ```
 
-or equivalently
-
-```bash
-python source/GUI.py
-```
-
 ### 3. Automatically Start the Server on a Raspberry Pi
 
 To ensure the server starts automatically when the Raspberry Pi boots, follow these steps:
@@ -78,10 +72,10 @@ Edit this file to look as follows
     ```bash
     #!/bin/bash
     # Replace the following placeholders with your specific details:
-    # {env} - Path to your virtual environment's Python binary
+    # {env} - Path to your virtual environment
     # {project_location} - Path to your SCPIProject folder
 
-    sudo {env}/python3 {project_location}/source/SCPIServer.py &
+    sudo {env}/bin/python3 {project_location}/source/SCPIServer.py &
     ```
 
     Remember to give the file the following permissions
@@ -100,4 +94,30 @@ Edit this file to look as follows
     ```bash
     echo -e "#! /bin/bash\nsudo $HOME/venv/bin/python3 $HOME/SCPIProject/source/SCPIServer.py &" | sudo tee /etc/rc.local
     sudo chmod 755 /etc/rc.local
+    ```
+
+To ensure the client starts automatically on the built-in screen when the Raspberry Pi boots, follow these steps:
+
+2. **Edit $HOME/.config/autostart**  
+    Edit or create a file named `SCPIClient.desktop` in the `$HOME/.config/autostart` directory with the following content:
+        ```ini
+        [Desktop Entry]
+        Type=Application
+        Exec={env}/bin/python3 {project_location}/source/SCPIClient.py
+        ```
+
+        Replace `{env}` with the path to your virtual environment and `{project_location}` with the path to your SCPIProject folder.
+
+    ### Example:
+    If your virtual environment is located at `/home/pi/venv` and your project is in `/home/pi/SCPIProject`, the file would look like this:
+    ```ini
+    [Desktop Entry]
+    Type=Application
+    Exec=/home/pi/venv/bin/python3 /home/pi/SCPIProject/source/SCPIClient.py
+    ```
+
+    If this is indeed your set up or if venv and SCPIProject are both located in your home directory, you can use the following script to do all of the above
+
+    ```bash
+    echo -e "[Desktop Entry]\nType=Application\nExec=$HOME/venv/bin/python3 $HOME/SCPIProject/source/SCPIClient.py" | tee $HOME/.config/autostart/SCPIClient.desktop
     ```
