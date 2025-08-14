@@ -643,7 +643,7 @@ N: {data['N']}
 
         table.setStyle(TableStyle(styles))
         table.wrapOn(c, width, height)
-        table.drawOn(c, 40, height - 120 - (len(table_data) + 4) * 18)
+        table.drawOn(c, 40, height + 20 - (len(table_data) + 4) * 18)
         
         h = height - 200
         for image in [t_model(data), t_model(data, flip=True), gamma_model(data)]:
@@ -702,7 +702,10 @@ N: {data['N']}
         
     def refresh(key, scaling=1):
         if key in st.session_state:
-            setattr(instrument, key, st.session_state[key] * scaling)
+            try:
+                setattr(instrument, key, st.session_state[key] * scaling)
+            except Exception as e:
+                error(f"<summary>Failed to connect to and set the instrument parameter {key}</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
         fetch()
         
     if st.session_state["refresh_before"]:
