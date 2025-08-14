@@ -5,6 +5,13 @@
 ```mermaid
 %%{ init: { "flowchart": { "curve": "monotoneY" } } }%%
 graph TB
+    %% Style definitions for the subgraphs (light grey background, rounded corners)
+    style Server fill:#eeeeee,stroke:#999,stroke-width:2px,rx:10,ry:10
+    style Client fill:#eeeeee,stroke:#999,stroke-width:2px,rx:10,ry:10
+
+    %% Define a class for grey nodes
+    classDef greyNode fill:#cccccc,stroke:#333,stroke-width:2px
+
     DMM1(DMM1)
     DMM2(DMM2)
     LCR(LCR)
@@ -24,10 +31,8 @@ graph TB
     SCPIServer --- SCPIClient2
     Headerboard --- SCPIServer
 
-    %% Styling Directives %%
-    style DMM1,DMM2,LCR,Headerboard,SCPIServer,SCPIClient1,SCPIClient2 fill:#cccccc
-    style Server fill:#eeeeee,stroke-width:2px,rx:10,ry:10
-    style Client fill:#eeeeee,stroke-width:2px,rx:10,ry:10
+    %% Apply the grey node class to all nodes
+    class DMM1,DMM2,LCR,Headerboard,SCPIServer,SCPIClient1,SCPIClient2 greyNode
 ```
 
 This project implements a SCPI (Standard Commands for Programmable Instruments) server and client system using Python. The server runs on a Raspberry Pi and controls the measurement path of different instruments (DMMs, LCR meter) through a headerboard by manipulating relays. It then talks to the instruments directly over SCPI (not shown) to fetch the measurement values. The client script can be run either as a built-in screen on the Raspberry Pi or a web interface accessible from a desktop.
