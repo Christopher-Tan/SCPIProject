@@ -704,6 +704,8 @@ N: {data['N']}
         if key in st.session_state:
             try:
                 setattr(instrument, key, st.session_state[key] * scaling)
+            except ValueError as e:
+                pass
             except Exception as e:
                 error(f"<summary>Failed to connect to and set the instrument parameter {key}</summary><traceback>Error: {e} {traceback.format_exc()}</traceback>")
         fetch()
