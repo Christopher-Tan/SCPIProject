@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm>=8.1.0"]
+requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.ruff]
@@ -10,7 +10,7 @@ extend-select = ["E"]
 
 [project]
 name = "PyMeasure"
-dynamic = ["version", "readme"]
+version = "1.0.0"  # Explicitly define the version
 authors = [
     {name = "PyMeasure Developers"}
 ]
@@ -62,8 +62,6 @@ docs = [
 ]
 
 [project.urls]
-Repository = "https://github.com/pymeasure/pymeasure"
-Issues = "https://github.com/pymeasure/pymeasure/issues"
 Documentation = "https://pymeasure.readthedocs.io"
 
 [tool.setuptools]
@@ -72,12 +70,6 @@ license-files = ["LICENSE.txt"]
 
 [tool.setuptools.dynamic]
 readme = {file = ["README.rst", "CHANGES.rst"]}
-
-[tool.setuptools_scm]
-# write_to = "pymeasure/_version.py"
-
-#[tool.flake8]
-## See .flake8, as it does not support pyproject.toml
 
 [tool.black]
 line-length = 100
