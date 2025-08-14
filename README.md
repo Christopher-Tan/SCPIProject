@@ -6,11 +6,11 @@
 %%{ init: { "flowchart": { "curve": "monotoneY" } } }%%
 graph TB
     %% Style definitions for the subgraphs (light grey background, rounded corners)
-    style Server fill:#eeeeee,stroke:#999,stroke-width:2px,rx:10,ry:10
-    style Client fill:#eeeeee,stroke:#999,stroke-width:2px,rx:10,ry:10
+    style Server fill:#eeeeee,stroke:#999,stroke-width:2px,rx:10,ry:10,color:#000
+    style Client fill:#eeeeee,stroke:#999,stroke-width:2px,rx:10,ry:10,color:#000
 
     %% Define a class for grey nodes
-    classDef greyNode fill:#cccccc,stroke:#333,stroke-width:2px
+    classDef greyNode fill:#cccccc,stroke:#333,stroke-width:2px,color:#000
 
     DMM1(DMM1)
     DMM2(DMM2)
