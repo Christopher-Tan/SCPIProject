@@ -22,7 +22,7 @@ import os
 
 def install_package(package_name, args=""):
     try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade"] + ([args] if args else []) + [package_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.check_call([sys.executable, "-m", "pip", "install"] + ([args] if args else []) + [package_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         print(f"Successfully installed {package_name}")
     except Exception as e:
         print(f"Failed to install {package_name}: {e}")
