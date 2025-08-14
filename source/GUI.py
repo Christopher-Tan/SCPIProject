@@ -634,11 +634,11 @@ N: {data['N']}
             ('ALIGN', (0, 0), (0, -1), 'CENTER'), # Center align the first column
             ('ALIGN', (1, 0), (1, -1), 'LEFT'), # Left align the second column
         ]
-        for row in table_data:
+        for row in row_headers:
             styles += [
-                ('BACKGROUND', (0, row, -1, row), colors.grey),
-                ('TEXTCOLOR', (0, row, -1, row), colors.whitesmoke),
-                ('FONTNAME', (0, row, -1, row), 'Helvetica-Bold'),
+                ('BACKGROUND', (0, row), (-1, row), colors.grey),
+                ('TEXTCOLOR', (0, row), (-1, row), colors.whitesmoke),
+                ('FONTNAME', (0, row), (-1, row), 'Helvetica-Bold'),
             ]
 
         table.setStyle(TableStyle(styles))
